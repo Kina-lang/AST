@@ -134,7 +134,7 @@ export class KinaASTParser {
       parameterTypeTokens.push(token);
       this.tokenStream.advance();
 
-      break;
+      this.tokenStream.match(EKinaLexerTokenKind.Comma);
     }
 
     this.tokenStream.expect(EKinaLexerTokenKind.ParentheseClose);
