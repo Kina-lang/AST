@@ -3,13 +3,21 @@ import { EKinaASTNodeKind, type IKinaASTExpressionNode } from "../types/ast";
 import { KinaASTExpressionNode } from "./_expression";
 
 export class KinaASTCallExpressionNode extends KinaASTExpressionNode {
-  protected readonly callee: IKinaASTExpressionNode;
-  protected readonly arguments: IKinaASTExpressionNode[];
+  protected readonly _callee: IKinaASTExpressionNode;
+  protected readonly _arguments: IKinaASTExpressionNode[];
 
   constructor(callee: IKinaASTExpressionNode, args: IKinaASTExpressionNode[]) {
     super(EKinaASTNodeKind.ExpressionCall);
 
-    this.callee = callee;
-    this.arguments = args;
+    this._callee = callee;
+    this._arguments = args;
+  }
+
+  public get callee() {
+    return this._callee;
+  }
+
+  public get arguments() {
+    return this._arguments;
   }
 }

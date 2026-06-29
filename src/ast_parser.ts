@@ -1,6 +1,7 @@
 import {
   EKinaLexerTokenKind,
   type IKinaLexerTokenDefinition,
+  type IKinaLexerTokenKindLiteral,
   type IKinaLexerTokenKindType,
 } from "@kina-lang/lexer";
 import { KinaASTTokenStream } from "./ast_token_stream";
@@ -201,7 +202,10 @@ export class KinaASTParser {
     token: IKinaLexerTokenDefinition,
   ): IKinaASTExpressionNode {
     if (this.isLiteralToken(token))
-      return new KinaASTLiteralExpressionNode(token.kind, token.value);
+      return new KinaASTLiteralExpressionNode(
+        token.kind as IKinaLexerTokenKindLiteral,
+        token.value,
+      );
     else if (token.kind == EKinaLexerTokenKind.Identifier)
       return new KinaASTVariableAccessNode(token.value);
     else if (token.kind == EKinaLexerTokenKind.ParentheseOpen) {

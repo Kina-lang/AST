@@ -1,9 +1,13 @@
 import type { EKinaASTNodeKind } from "../types/ast";
 
 export class KinaASTNode {
-  protected readonly kind: EKinaASTNodeKind;
+  protected readonly _kind: EKinaASTNodeKind;
 
   protected constructor(kind: EKinaASTNodeKind) {
-    this.kind = kind;
+    this._kind = kind;
+  }
+
+  public get kind(): EKinaASTNodeKind {
+    return this._kind;
   }
 }

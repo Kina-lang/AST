@@ -1,14 +1,23 @@
+import type { IKinaLexerTokenKindLiteral } from "@kina-lang/lexer";
 import { EKinaASTNodeKind } from "../types/ast";
 import { KinaASTExpressionNode } from "./_expression";
 
 export class KinaASTLiteralExpressionNode extends KinaASTExpressionNode {
-  protected readonly literalType: any; // TODO: Add proper type
-  protected readonly value: string;
+  protected readonly _literalType: IKinaLexerTokenKindLiteral; // TODO: Add proper type
+  protected readonly _value: string;
 
-  constructor(literalType: any, value: string) {
+  constructor(literalType: IKinaLexerTokenKindLiteral, value: string) {
     super(EKinaASTNodeKind.LiteralStatement);
 
-    this.literalType = literalType;
-    this.value = value;
+    this._literalType = literalType;
+    this._value = value;
+  }
+
+  public get literalType() {
+    return this._literalType
+  }
+
+  public get value() {
+    return this._value
   }
 }

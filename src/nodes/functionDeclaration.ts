@@ -5,10 +5,10 @@ import type { KinaASTParameterDeclarationNode } from "./parameterDeclaration";
 import type { KinaASTBlockStatementNode } from "./blockStatement";
 
 export class KinaASTFunctionDeclarationNode extends KinaASTNode {
-  protected readonly name: string;
-  protected readonly parameters: KinaASTParameterDeclarationNode[];
-  protected readonly returnType: IKinaLexerTokenKindType;
-  protected readonly body: KinaASTBlockStatementNode;
+  protected readonly _name: string;
+  protected readonly _parameters: KinaASTParameterDeclarationNode[];
+  protected readonly _returnType: IKinaLexerTokenKindType;
+  protected readonly _body: KinaASTBlockStatementNode;
 
   constructor(
     name: string,
@@ -18,9 +18,25 @@ export class KinaASTFunctionDeclarationNode extends KinaASTNode {
   ) {
     super(EKinaASTNodeKind.FunctionDeclaration);
 
-    this.name = name;
-    this.parameters = parameters;
-    this.returnType = returnType;
-    this.body = body;
+    this._name = name;
+    this._parameters = parameters;
+    this._returnType = returnType;
+    this._body = body;
+  }
+
+  public get name() {
+    return this._name;
+  }
+
+  public get parameters() {
+    return this._parameters;
+  }
+
+  public get returnType() {
+    return this._returnType;
+  }
+
+  public get body() {
+    return this._body;
   }
 }
