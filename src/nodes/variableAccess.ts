@@ -2,11 +2,15 @@ import { EKinaASTNodeKind } from "../types/ast";
 import { KinaASTExpressionNode } from "./_expression";
 
 export class KinaASTVariableAccessNode extends KinaASTExpressionNode {
-  protected readonly name: string;
+  protected readonly _name: string;
 
   constructor(name: string) {
     super(EKinaASTNodeKind.VariableAccess);
 
-    this.name = name;
+    this._name = name;
+  }
+
+  public get name() {
+    return this._name;
   }
 }

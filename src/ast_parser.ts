@@ -19,6 +19,8 @@ import { KinaASTLiteralExpressionNode } from "./nodes/literalExpression";
 import { KinaASTVariableAccessNode } from "./nodes/variableAccess";
 import { KinaASTCallExpressionNode } from "./nodes/callExpression";
 import { KinaASTMemberAccessNode } from "./nodes/memberAccess";
+import { KinaASTExternDeclarationNode } from "./nodes/externDeclaration";
+import { KinaASTIncludeDirectiveNode } from "./nodes/includeDirective";
 
 export class KinaASTParser {
   private readonly tokenStream: KinaASTTokenStream;
@@ -66,6 +68,10 @@ export class KinaASTParser {
     switch (token.kind) {
       case EKinaLexerTokenKind.KeywordFunction:
         return this.parseFunctionDeclaration();
+      case EKinaLexerTokenKind.KeywordExtern:
+        return this.parseExternDeclaration();
+      case EKinaLexerTokenKind.DirectiveInclude:
+        return this.parseIncludeDirective();
       default:
         throw new Error(
           `Unexpected token "${token.kind}" at top level. ${this.fileName}:${token.line + 1}:${token.col + 1}`,
@@ -104,6 +110,63 @@ export class KinaASTParser {
       parameters ?? [],
       type,
       body ?? new KinaASTBlockStatementNode([]),
+    );
+  }
+
+  private parseExternDeclaration(): KinaASTExternDeclarationNode {
+    this.tokenStream.expect(EKinaLexerTokenKind.KeywordExtern);
+
+    // name of the function
+    const identifierToken = this.tokenStream.expect(
+      EKinaLexerTokenKind.Identifier,
+    );
+
+    this.tokenStream.expect(EKinaLexerTokenKind.ParentheseOpen);
+
+    // parameters of the function
+    const parameterTypeTokens: IKinaLexerTokenDefinition[] = [];
+
+    while (true) {
+      const token = this.tokenStream.peek();
+      if (!token || token.kind == EKinaLexerTokenKind.EOF) break;
+      if (!this.isTypeToken(token)) break;
+
+      parameterTypeTokens.push(token);
+      this.tokenStream.advance();
+
+      break;
+    }
+
+    this.tokenStream.expect(EKinaLexerTokenKind.ParentheseClose);
+    this.tokenStream.expect(EKinaLexerTokenKind.Colon);
+
+    // return type of the function
+    const type = this.parseTypeIdentifier();
+
+    this.tokenStream.expect(EKinaLexerTokenKind.Semicolon);
+
+    return new KinaASTExternDeclarationNode(
+      identifierToken.value,
+      parameterTypeTokens.map((p) => p.kind as IKinaLexerTokenKindType),
+      type,
+    );
+  }
+
+  private parseIncludeDirective(): KinaASTIncludeDirectiveNode {
+    this.tokenStream.expect(EKinaLexerTokenKind.DirectiveInclude);
+    this.tokenStream.expect(EKinaLexerTokenKind.ParentheseOpen);
+
+    const argToken = this.tokenStream.advance();
+    if (!argToken || !this.isLiteralToken(argToken))
+      throw new Error("Invalid directive argument");
+
+    this.tokenStream.expect(EKinaLexerTokenKind.ParentheseClose);
+
+    return new KinaASTIncludeDirectiveNode(
+      new KinaASTLiteralExpressionNode(
+        argToken.kind as IKinaLexerTokenKindLiteral,
+        argToken.value,
+      ),
     );
   }
 

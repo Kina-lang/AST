@@ -32,6 +32,8 @@ export enum EKinaASTNodeKind {
   Literal = "kina.literal",*/
   VariableAccess = "kina.variable.access",
   MemberAccess = "kina.member.access",
+  ExternDeclaration = "kina.extern.declaration",
+  IncludeDirective = "kina.directive.include",
 }
 
 export type IKinaASTStatementNode =
