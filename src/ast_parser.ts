@@ -143,7 +143,7 @@ export class KinaASTParser {
     // return type of the function
     const type = this.parseTypeIdentifier();
 
-    this.tokenStream.expect(EKinaLexerTokenKind.Semicolon);
+    this.tokenStream.match(EKinaLexerTokenKind.Semicolon);
 
     return new KinaASTExternDeclarationNode(
       identifierToken.value,
@@ -241,7 +241,7 @@ export class KinaASTParser {
         const expression = this.parseExpression();
         if (!expression) return null;
 
-        this.tokenStream.expect(EKinaLexerTokenKind.Semicolon);
+        this.tokenStream.match(EKinaLexerTokenKind.Semicolon);
 
         return new KinaASTExpressionStatementNode(expression);
     }
@@ -337,7 +337,7 @@ export class KinaASTParser {
     if (nextToken && nextToken.kind != EKinaLexerTokenKind.Semicolon)
       value = this.parseExpression();
 
-    this.tokenStream.expect(EKinaLexerTokenKind.Semicolon);
+    this.tokenStream.match(EKinaLexerTokenKind.Semicolon);
 
     return new KinaASTReturnStatementNode(value);
   }
