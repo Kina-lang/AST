@@ -1,5 +1,6 @@
 import { SemicolonToken, TokenKind } from "@kina-lang/lexer";
 import type { BaseNode } from "../nodes/_base";
+import type { ExpressionBaseNode } from "../nodes/_expression";
 import type { TokenStream } from "../TokenStream";
 import { BaseParser } from "./_base";
 import { Parsers } from "./_index";
@@ -46,7 +47,7 @@ export class ReturnStatementParser extends BaseParser {
     ];
   }
 
-  private parseExpression(tokenStream: TokenStream): BaseNode | null {
+  private parseExpression(tokenStream: TokenStream): ExpressionBaseNode | null {
     if (tokenStream.isAtEnd()) return null;
     if (!Parsers.Expression.canParse(tokenStream)) return null;
 

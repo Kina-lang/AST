@@ -10,6 +10,11 @@ export enum NodeKind {
   ReturnStatement = "ast.ReturnStatement",
 
   LiteralExpression = "ast.LiteralExpression",
+  IdentifierExpression = "ast.IdentifierExpression",
+  BinaryExpression = "ast.BinaryExpression",
+  GroupExpression = "ast.GroupExpression",
+  MemberAccessExpression = "ast.MemberAccessExpression",
+  CallExpression = "ast.CallExpression",
 
   BasicBlock = "ast.BasicBlock",
 }

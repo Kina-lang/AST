@@ -20,6 +20,18 @@ export class TokenStream {
   }
 
   /**
+   * Looks at the token at the given offset from the current cursor position, but does not move it
+   * @param offset Offset from the current cursor position
+   * @returns token at the given offset from the current cursor position
+   */
+  public peekAhead(offset: number): BaseToken | null {
+    const token = this._tokens[this._cursorPosition + offset];
+    if (!token) return null;
+
+    return token;
+  }
+
+  /**
    * Checks if the cursor is at the end (no token / EOF)
    * @returns boolean
    */
