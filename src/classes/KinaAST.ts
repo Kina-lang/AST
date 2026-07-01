@@ -16,6 +16,7 @@ export class KinaAST {
     Parsers.Extern,
     Parsers.Function,
     Parsers.ReturnStatement,
+    Parsers.ExpressionStatement, // MUST be last
   ];
 
   constructor() {}

@@ -10,6 +10,7 @@ import { IncludeDirectiveParser } from "./IncludeDirectiveParser";
 import { LiteralExpressionParser } from "./expressions/LiteralExpressionParser";
 import { MemberAccessExpressionParser } from "./expressions/MemberAccessExpressionParser";
 import { ReturnStatementParser } from "./ReturnStatementParser";
+import { ExpressionStatementParser } from "./ExpressionStatement";
 
 export const Parsers = {
   File: new FileParser(),
@@ -24,4 +25,5 @@ export const Parsers = {
   CallExpression: new CallExpressionParser(),
   MemberAccessExpression: new MemberAccessExpressionParser(),
   BinaryExpression: new BinaryExpressionParser(),
+  ExpressionStatement: new ExpressionStatementParser(),
 };
