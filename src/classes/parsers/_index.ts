@@ -11,6 +11,7 @@ import { LiteralExpressionParser } from "./expressions/LiteralExpressionParser";
 import { MemberAccessExpressionParser } from "./expressions/MemberAccessExpressionParser";
 import { ReturnStatementParser } from "./ReturnStatementParser";
 import { ExpressionStatementParser } from "./ExpressionStatement";
+import { VariableDeclarationStatementParser } from "./VariableDeclarationStatement";
 
 export const Parsers = {
   File: new FileParser(),
@@ -26,4 +27,5 @@ export const Parsers = {
   MemberAccessExpression: new MemberAccessExpressionParser(),
   BinaryExpression: new BinaryExpressionParser(),
   ExpressionStatement: new ExpressionStatementParser(),
+  VariableDeclarationStatement: new VariableDeclarationStatementParser(),
 };
