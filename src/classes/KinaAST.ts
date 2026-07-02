@@ -1,5 +1,4 @@
 import type { BaseToken } from "@kina-lang/lexer";
-import type { BaseNode } from "./nodes/_base";
 import type { BaseParser } from "./parsers/_base";
 import type { FileNode } from "./nodes/File";
 import { Parsers } from "./parsers/_index";
@@ -17,6 +16,7 @@ export class KinaAST {
     Parsers.Function,
     Parsers.ReturnStatement,
     Parsers.VariableDeclarationStatement,
+    Parsers.BasicBlock,
     Parsers.ExpressionStatement, // MUST be last
   ];
 

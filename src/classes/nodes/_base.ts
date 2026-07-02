@@ -1,3 +1,4 @@
+import { inspect } from "util";
 import type { NodeKind, NodeSpan, NodeSpanExport } from "../../types/nodes";
 
 export abstract class BaseNode {
@@ -29,5 +30,9 @@ export abstract class BaseNode {
           }
         : {}),
     };
+  }
+
+  [inspect.custom](): string {
+    return `BaseNode<${this._kind}>`;
   }
 }

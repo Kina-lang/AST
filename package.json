@@ -7,11 +7,14 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "@kina-lang/utils": "workspace:*",
-    "@kina-lang/lexer": "workspace:*"
+    "@kina-lang/lexer": "workspace:*",
+    "@kina-lang/utils": "workspace:*"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "module"
+  "type": "module",
+  "devDependencies": {
+    "@types/node": "^26.1.0"
+  }
 }
