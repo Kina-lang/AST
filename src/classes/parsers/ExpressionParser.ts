@@ -40,6 +40,7 @@ export class ExpressionParser extends BaseParser {
     if (KINA_LITERAL_TOKENS.has(currentToken.kind)) return true;
     if (currentToken.kind === TokenKind.Identifier) return true;
     if (currentToken.kind === TokenKind.ParentheseOpen) return true;
+    if (Parsers.UnaryExpression.canParse(tokenStream)) return true;
 
     return false;
   }
@@ -71,6 +72,10 @@ export class ExpressionParser extends BaseParser {
       );
 
     const currentToken = tokenStream.peek()!;
+
+    // Unary expressions (+expr, -expr)
+    if (Parsers.UnaryExpression.canParse(tokenStream))
+      return Parsers.UnaryExpression.parseExpression(tokenStream);
 
     // Literal expressions (integers, floats, strings, booleans)
     if (Parsers.LiteralExpression.canParse(tokenStream))

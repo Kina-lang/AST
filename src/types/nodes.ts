@@ -17,6 +17,7 @@ export enum NodeKind {
   GroupExpression = "ast.GroupExpression",
   MemberAccessExpression = "ast.MemberAccessExpression",
   CallExpression = "ast.CallExpression",
+  UnaryExpression = "ast.UnaryExpression",
 
   BasicBlock = "ast.BasicBlock",
 }

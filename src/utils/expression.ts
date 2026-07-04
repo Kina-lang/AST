@@ -9,6 +9,7 @@ export const KINA_EXPRESSION_PRECEDENCE = {
   ASSIGNMENT: 5, // =
   SUM: 10, // + -
   PRODUCT: 20, // * /
+  PREFIX: 25, // unary + -
   CALL: 30, // myFunction()
   MEMBER_ACCESS: 40, // object.property
 };
@@ -35,6 +36,14 @@ export const KINA_INFIX_OPERATORS = new Map<TokenKind, string>([
   [TokenKind.OperatorMultiply, "*"],
   [TokenKind.OperatorDivide, "/"],
   [TokenKind.OperatorModulo, "%"],
+]);
+
+/**
+ * Maps prefix operator token kinds to their string representation.
+ */
+export const KINA_PREFIX_OPERATORS = new Map<TokenKind, string>([
+  [TokenKind.OperatorPlus, "+"],
+  [TokenKind.OperatorMinus, "-"],
 ]);
 
 /**
