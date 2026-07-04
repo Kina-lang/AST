@@ -18,6 +18,11 @@ export const KINA_EXPRESSION_PRECEDENCE = {
  */
 export const KINA_INFIX_PRECEDENCE = new Map<TokenKind, number>([
   [TokenKind.OperatorAssign, KINA_EXPRESSION_PRECEDENCE.ASSIGNMENT],
+  [TokenKind.OperatorPlus, KINA_EXPRESSION_PRECEDENCE.SUM],
+  [TokenKind.OperatorMinus, KINA_EXPRESSION_PRECEDENCE.SUM],
+  [TokenKind.OperatorMultiply, KINA_EXPRESSION_PRECEDENCE.PRODUCT],
+  [TokenKind.OperatorDivide, KINA_EXPRESSION_PRECEDENCE.PRODUCT],
+  [TokenKind.OperatorModulo, KINA_EXPRESSION_PRECEDENCE.PRODUCT],
 ]);
 
 /**
@@ -25,6 +30,11 @@ export const KINA_INFIX_PRECEDENCE = new Map<TokenKind, number>([
  */
 export const KINA_INFIX_OPERATORS = new Map<TokenKind, string>([
   [TokenKind.OperatorAssign, "="],
+  [TokenKind.OperatorPlus, "+"],
+  [TokenKind.OperatorMinus, "-"],
+  [TokenKind.OperatorMultiply, "*"],
+  [TokenKind.OperatorDivide, "/"],
+  [TokenKind.OperatorModulo, "%"],
 ]);
 
 /**

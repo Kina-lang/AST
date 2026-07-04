@@ -1,6 +1,5 @@
 import { KinaAssertionError } from "@kina-lang/utils";
 import type { TokenStream } from "../../TokenStream";
-import { BaseParser } from "../_base";
 import type { BaseNode } from "../../nodes/_base";
 import type { ExpressionBaseNode } from "../../nodes/_expression";
 import {
