@@ -14,6 +14,7 @@ import { ExpressionStatementParser } from "./ExpressionStatement";
 import { VariableDeclarationStatementParser } from "./VariableDeclarationStatement";
 import { UnaryExpressionParser } from "./expressions/UnaryExpressionParser";
 import { IfStatementParser } from "./IfStatementParser";
+import { ImportParser } from "./ImportParser";
 
 export const Parsers = {
   File: new FileParser(),
@@ -32,4 +33,5 @@ export const Parsers = {
   ExpressionStatement: new ExpressionStatementParser(),
   VariableDeclarationStatement: new VariableDeclarationStatementParser(),
   IfStatement: new IfStatementParser(),
+  Import: new ImportParser(),
 };
