@@ -3,7 +3,6 @@ import type { BaseNode } from "../nodes/_base";
 import type { TokenStream } from "../TokenStream";
 import { BaseParser } from "./_base";
 import { BasicBlockNode } from "../nodes/BasicBlock";
-import { Parsers } from "./_index";
 import { KinaAST } from "../KinaAST";
 import { KinaAssertionError } from "@kina-lang/utils";
 
@@ -40,6 +39,36 @@ export class BasicBlockParser extends BaseParser {
     return [
       new BasicBlockNode(
         { start: start.span!.start, end: (semicolon ?? end).span!.end },
+        nodes,
+      ),
+    ];
+  }
+
+  public parseSingleStatement(tokenStream: TokenStream): BasicBlockNode[] {
+    const nodes: BaseNode[] = [];
+
+    while (!tokenStream.isAtEnd()) {
+      const nextChar = tokenStream.peek();
+      if (nextChar === null) break;
+      if (nextChar.kind === TokenKind.Semicolon) {
+        tokenStream.advance();
+        break;
+      }
+
+      const result = this.parseNext(tokenStream);
+      if (result) nodes.push(...result);
+      break; // Only parse a single statement
+    }
+
+    return [
+      new BasicBlockNode(
+        {
+          start: nodes[0]!.span!.start ?? tokenStream.peek()!.span!.start ?? 0,
+          end:
+            nodes[nodes.length - 1]!.span!.end ??
+            tokenStream.peek()!.span!.end ??
+            0,
+        },
         nodes,
       ),
     ];

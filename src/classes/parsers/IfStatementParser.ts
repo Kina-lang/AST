@@ -26,12 +26,18 @@ export class IfStatementParser extends BaseParser {
     const condition = Parsers.Expression.parse(tokenStream)[0]!;
     tokenStream.expect(TokenKind.ParentheseClose);
 
-    const thenBlock = Parsers.BasicBlock.parse(tokenStream)[0]!;
+    const thenBlock =
+      tokenStream.peek()?.kind == TokenKind.BraceOpen
+        ? Parsers.BasicBlock.parse(tokenStream)[0]!
+        : Parsers.BasicBlock.parseSingleStatement(tokenStream)[0]!;
 
     let elseBlock: BasicBlockNode | null = null;
 
     if (tokenStream.match(TokenKind.KeywordElse)) {
-      elseBlock = Parsers.BasicBlock.parse(tokenStream)[0]!;
+      elseBlock =
+        tokenStream.peek()?.kind == TokenKind.BraceOpen
+          ? Parsers.BasicBlock.parse(tokenStream)[0]!
+          : Parsers.BasicBlock.parseSingleStatement(tokenStream)[0]!;
     }
 
     const end = elseBlock ? elseBlock.span!.end : thenBlock.span!.end;
