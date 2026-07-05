@@ -17,6 +17,7 @@ export class KinaAST {
     Parsers.ReturnStatement,
     Parsers.VariableDeclarationStatement,
     Parsers.BasicBlock,
+    Parsers.IfStatement,
     Parsers.ExpressionStatement, // MUST be last
   ];
 

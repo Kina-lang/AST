@@ -15,3 +15,4 @@ export * from "./MemberAccessExpression";
 export * from "./ReturnStatement";
 export * from "./VariableDeclarationStatementNode";
 export * from "./UnaryExpression";
+export * from "./IfStatement";

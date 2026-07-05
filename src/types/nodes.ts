@@ -10,6 +10,7 @@ export enum NodeKind {
   ReturnStatement = "ast.ReturnStatement",
   ExpressionStatement = "ast.ExpressionStatement",
   VariableDeclarationStatement = "ast.VariableDeclarationStatement",
+  IfStatement = "ast.IfStatement",
 
   LiteralExpression = "ast.LiteralExpression",
   IdentifierExpression = "ast.IdentifierExpression",

@@ -13,6 +13,7 @@ import { ReturnStatementParser } from "./ReturnStatementParser";
 import { ExpressionStatementParser } from "./ExpressionStatement";
 import { VariableDeclarationStatementParser } from "./VariableDeclarationStatement";
 import { UnaryExpressionParser } from "./expressions/UnaryExpressionParser";
+import { IfStatementParser } from "./IfStatementParser";
 
 export const Parsers = {
   File: new FileParser(),
@@ -30,4 +31,5 @@ export const Parsers = {
   UnaryExpression: new UnaryExpressionParser(),
   ExpressionStatement: new ExpressionStatementParser(),
   VariableDeclarationStatement: new VariableDeclarationStatementParser(),
+  IfStatement: new IfStatementParser(),
 };
