@@ -44,6 +44,7 @@ export const KINA_INFIX_OPERATORS = new Map<TokenKind, string>([
 export const KINA_PREFIX_OPERATORS = new Map<TokenKind, string>([
   [TokenKind.OperatorPlus, "+"],
   [TokenKind.OperatorMinus, "-"],
+  [TokenKind.OperatorNot, "!"],
 ]);
 
 /**
