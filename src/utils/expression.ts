@@ -7,6 +7,10 @@ import { TokenKind } from "@kina-lang/lexer";
 export const KINA_EXPRESSION_PRECEDENCE = {
   LOWEST: 0,
   ASSIGNMENT: 5, // =
+  LOGICAL_OR: 6, // ||
+  LOGICAL_AND: 7, // &&
+  EQUALITY: 8, // == !=
+  COMPARISON: 9, // < <= > >=
   SUM: 10, // + -
   PRODUCT: 20, // * /
   PREFIX: 25, // unary + -
@@ -19,6 +23,14 @@ export const KINA_EXPRESSION_PRECEDENCE = {
  */
 export const KINA_INFIX_PRECEDENCE = new Map<TokenKind, number>([
   [TokenKind.OperatorAssign, KINA_EXPRESSION_PRECEDENCE.ASSIGNMENT],
+  [TokenKind.OperatorOr, KINA_EXPRESSION_PRECEDENCE.LOGICAL_OR],
+  [TokenKind.OperatorAnd, KINA_EXPRESSION_PRECEDENCE.LOGICAL_AND],
+  [TokenKind.OperatorEqual, KINA_EXPRESSION_PRECEDENCE.EQUALITY],
+  [TokenKind.OperatorNotEqual, KINA_EXPRESSION_PRECEDENCE.EQUALITY],
+  [TokenKind.OperatorLessThan, KINA_EXPRESSION_PRECEDENCE.COMPARISON],
+  [TokenKind.OperatorLessThanOrEqual, KINA_EXPRESSION_PRECEDENCE.COMPARISON],
+  [TokenKind.OperatorGreaterThan, KINA_EXPRESSION_PRECEDENCE.COMPARISON],
+  [TokenKind.OperatorGreaterThanOrEqual, KINA_EXPRESSION_PRECEDENCE.COMPARISON],
   [TokenKind.OperatorPlus, KINA_EXPRESSION_PRECEDENCE.SUM],
   [TokenKind.OperatorMinus, KINA_EXPRESSION_PRECEDENCE.SUM],
   [TokenKind.OperatorMultiply, KINA_EXPRESSION_PRECEDENCE.PRODUCT],
@@ -31,6 +43,14 @@ export const KINA_INFIX_PRECEDENCE = new Map<TokenKind, number>([
  */
 export const KINA_INFIX_OPERATORS = new Map<TokenKind, string>([
   [TokenKind.OperatorAssign, "="],
+  [TokenKind.OperatorOr, "||"],
+  [TokenKind.OperatorAnd, "&&"],
+  [TokenKind.OperatorEqual, "=="],
+  [TokenKind.OperatorNotEqual, "!="],
+  [TokenKind.OperatorLessThan, "<"],
+  [TokenKind.OperatorLessThanOrEqual, "<="],
+  [TokenKind.OperatorGreaterThan, ">"],
+  [TokenKind.OperatorGreaterThanOrEqual, ">="],
   [TokenKind.OperatorPlus, "+"],
   [TokenKind.OperatorMinus, "-"],
   [TokenKind.OperatorMultiply, "*"],
