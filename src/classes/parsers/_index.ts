@@ -16,6 +16,7 @@ import { UnaryExpressionParser } from "./expressions/UnaryExpressionParser";
 import { IfStatementParser } from "./IfStatementParser";
 import { ImportParser } from "./ImportParser";
 import { ExportParser } from "./ExportParser";
+import { TypeParser } from "./TypeParser";
 
 export const Parsers = {
   File: new FileParser(),
@@ -36,4 +37,5 @@ export const Parsers = {
   IfStatement: new IfStatementParser(),
   Import: new ImportParser(),
   Export: new ExportParser(),
+  Type: new TypeParser(),
 };

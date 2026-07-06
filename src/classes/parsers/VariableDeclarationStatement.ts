@@ -6,7 +6,7 @@ import { KINA_TYPE_TOKENS } from "../../utils/type";
 import { Parsers } from "./_index";
 import { KinaAssertionError } from "@kina-lang/utils";
 import { VariableDeclarationStatementNode } from "../nodes/VariableDeclarationStatementNode";
-import type { KinaTypeTokenKind } from "../../types/types";
+import type { TypeBaseNode } from "../nodes/_type";
 
 export class VariableDeclarationStatementParser extends BaseParser {
   constructor() {
@@ -36,7 +36,7 @@ export class VariableDeclarationStatementParser extends BaseParser {
     ) as IdentifierToken;
     tokenStream.expect(TokenKind.Colon);
 
-    const typeToken = tokenStream.expectAny([...KINA_TYPE_TOKENS]);
+    const typeNode = Parsers.Type.parse(tokenStream)[0] as TypeBaseNode;
     tokenStream.expect(TokenKind.OperatorAssign);
 
     const expression = Parsers.Expression.parse(tokenStream);
@@ -54,7 +54,7 @@ export class VariableDeclarationStatementParser extends BaseParser {
           end: (semicolonToken ?? expression[0]!).span!.end,
         },
         identifierToken.value,
-        typeToken.kind as KinaTypeTokenKind,
+        typeNode,
         start.kind === TokenKind.KeywordMutable,
         expression[0]!,
       ),

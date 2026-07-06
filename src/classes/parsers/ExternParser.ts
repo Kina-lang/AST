@@ -2,9 +2,9 @@ import { IdentifierToken, TokenKind } from "@kina-lang/lexer";
 import type { BaseNode } from "../nodes/_base";
 import type { TokenStream } from "../TokenStream";
 import { BaseParser } from "./_base";
-import type { KinaTypeTokenKind } from "../../types/types";
-import { KINA_TYPE_TOKENS } from "../../utils/type";
+import { Parsers } from "./_index";
 import { ExternNode } from "../nodes/Extern";
+import type { TypeBaseNode } from "../nodes/_type";
 
 export class ExternParser extends BaseParser {
   constructor() {
@@ -32,9 +32,9 @@ export class ExternParser extends BaseParser {
 
     tokenStream.expect(TokenKind.Colon);
 
-    const returnTypeToken = tokenStream.expectAny([...KINA_TYPE_TOKENS]);
+    const returnTypeNode = Parsers.Type.parse(tokenStream)[0] as TypeBaseNode;
 
-    const end = returnTypeToken;
+    const end = returnTypeNode;
     const semicolon = tokenStream.match(TokenKind.Semicolon);
 
     return [
@@ -42,25 +42,25 @@ export class ExternParser extends BaseParser {
         { start: start.span!.start, end: (semicolon ?? end).span!.end },
         nameToken.value,
         parameterTypes,
-        returnTypeToken.kind as KinaTypeTokenKind,
+        returnTypeNode,
       ),
     ];
   }
 
-  private parseParameterTypes(tokenStream: TokenStream): KinaTypeTokenKind[] {
+  private parseParameterTypes(tokenStream: TokenStream): TypeBaseNode[] {
     const nextToken = tokenStream.peek();
     if (nextToken === null) return [];
     if (nextToken.kind === TokenKind.ParentheseClose) return [];
 
-    const parameterTypes: KinaTypeTokenKind[] = [];
+    const parameterTypes: TypeBaseNode[] = [];
 
     while (!tokenStream.isAtEnd()) {
       const currentToken = tokenStream.peek();
       if (currentToken === null) break;
       if (currentToken.kind === TokenKind.ParentheseClose) break;
 
-      const typeToken = tokenStream.expectAny([...KINA_TYPE_TOKENS]);
-      parameterTypes.push(typeToken.kind as KinaTypeTokenKind);
+      const typeNode = Parsers.Type.parse(tokenStream)[0] as TypeBaseNode;
+      parameterTypes.push(typeNode);
 
       const comma = tokenStream.match(TokenKind.Comma);
       if (comma === null) break;

@@ -1,18 +1,18 @@
 import { NodeKind, type NodeSpan } from "../../types/nodes";
-import type { KinaTypeTokenKind } from "../../types/types";
 import { BaseNode } from "./_base";
+import type { TypeBaseNode } from "./_type";
 import type { ExpressionBaseNode } from "./_expression";
 
 export class VariableDeclarationStatementNode extends BaseNode {
   private readonly _name: string;
-  private readonly _type: KinaTypeTokenKind;
+  private readonly _type: TypeBaseNode;
   private readonly _isMutable: boolean;
   private readonly _value: ExpressionBaseNode;
 
   constructor(
     span: NodeSpan,
     name: string,
-    type: KinaTypeTokenKind,
+    type: TypeBaseNode,
     isMutable: boolean,
     value: ExpressionBaseNode,
   ) {
@@ -28,7 +28,7 @@ export class VariableDeclarationStatementNode extends BaseNode {
     return this._name;
   }
 
-  public get type(): KinaTypeTokenKind {
+  public get type(): TypeBaseNode {
     return this._type;
   }
 
@@ -42,7 +42,7 @@ export class VariableDeclarationStatementNode extends BaseNode {
 
   public override export(): ReturnType<BaseNode["export"]> & {
     name: string;
-    type: KinaTypeTokenKind;
+    type: ReturnType<TypeBaseNode["export"]>;
     isMutable: boolean;
     value: ReturnType<ExpressionBaseNode["export"]>;
   } {
@@ -50,7 +50,7 @@ export class VariableDeclarationStatementNode extends BaseNode {
     return {
       ...baseExport,
       name: this._name,
-      type: this._type,
+      type: this._type.export(),
       isMutable: this._isMutable,
       value: this._value.export(),
     };

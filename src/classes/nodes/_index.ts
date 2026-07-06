@@ -18,3 +18,5 @@ export * from "./UnaryExpression";
 export * from "./IfStatement";
 export * from "./Import";
 export * from "./Export";
+export * from "./_type";
+export * from "./PrimitiveTypeNode";

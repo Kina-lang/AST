@@ -2,11 +2,10 @@ import { IdentifierToken, TokenKind } from "@kina-lang/lexer";
 import type { BaseNode } from "../nodes/_base";
 import type { TokenStream } from "../TokenStream";
 import { BaseParser } from "./_base";
-import { KINA_TYPE_TOKENS } from "../../utils/type";
 import type { FunctionParameterNode } from "../nodes/FunctionParameter";
 import { Parsers } from "./_index";
 import { FunctionNode } from "../nodes/Function";
-import type { KinaTypeTokenKind } from "../../types/types";
+import type { TypeBaseNode } from "../nodes/_type";
 import { BasicBlockNode } from "../nodes/BasicBlock";
 import { KinaAssertionError } from "@kina-lang/utils";
 
@@ -36,7 +35,7 @@ export class FunctionParser extends BaseParser {
     tokenStream.expect(TokenKind.ParentheseClose);
     tokenStream.expect(TokenKind.Colon);
 
-    const typeToken = tokenStream.expectAny([...KINA_TYPE_TOKENS]);
+    const typeNode = Parsers.Type.parse(tokenStream)[0] as TypeBaseNode;
 
     const basicBlock = Parsers.BasicBlock.parse(
       tokenStream,
@@ -49,7 +48,7 @@ export class FunctionParser extends BaseParser {
         { start: start.span!.start, end: basicBlock.span!.end },
         identifierToken.value,
         parameters,
-        typeToken.kind as KinaTypeTokenKind,
+        typeNode,
         basicBlock,
       ),
     ];

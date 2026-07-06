@@ -3,8 +3,8 @@ import type { BaseNode } from "../nodes/_base";
 import type { TokenStream } from "../TokenStream";
 import { BaseParser } from "./_base";
 import { FunctionParameterNode } from "../nodes/FunctionParameter";
-import { KINA_TYPE_TOKENS } from "../../utils/type";
-import type { KinaTypeTokenKind } from "../../types/types";
+import { Parsers } from "./_index";
+import type { TypeBaseNode } from "../nodes/_type";
 
 export class FunctionParameterParser extends BaseParser {
   constructor() {
@@ -26,13 +26,13 @@ export class FunctionParameterParser extends BaseParser {
 
     tokenStream.expect(TokenKind.Colon);
 
-    const typeToken = tokenStream.expectAny([...KINA_TYPE_TOKENS]);
+    const typeNode = Parsers.Type.parse(tokenStream)[0] as TypeBaseNode;
 
     return [
       new FunctionParameterNode(
-        { start: identifierToken.span!.start, end: typeToken.span!.end },
+        { start: identifierToken.span!.start, end: typeNode.span!.end },
         identifierToken.value,
-        typeToken.kind as KinaTypeTokenKind,
+        typeNode,
       ),
     ];
   }

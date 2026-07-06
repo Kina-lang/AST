@@ -24,6 +24,8 @@ export enum NodeKind {
   UnaryExpression = "ast.UnaryExpression",
 
   BasicBlock = "ast.BasicBlock",
+
+  PrimitiveTypeNode = "ast.PrimitiveTypeNode",
 }
 
 export interface NodeSpan {
