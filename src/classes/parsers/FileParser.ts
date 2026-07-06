@@ -35,7 +35,7 @@ export class FileParser extends BaseParser {
     ];
   }
 
-  private parseNext(tokenStream: TokenStream): BaseNode[] | null {
+  public parseNext(tokenStream: TokenStream): BaseNode[] | null {
     if (tokenStream.isAtEnd()) return null;
 
     for (const parser of KinaAST.PARSERS) {

@@ -4,6 +4,7 @@ export enum NodeKind {
   IncludeDirective = "ast.IncludeDirective",
 
   Import = "ast.Import",
+  Export = "ast.Export",
 
   Extern = "ast.Extern",
   Function = "ast.Function",

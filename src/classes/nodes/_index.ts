@@ -16,3 +16,5 @@ export * from "./ReturnStatement";
 export * from "./VariableDeclarationStatementNode";
 export * from "./UnaryExpression";
 export * from "./IfStatement";
+export * from "./Import";
+export * from "./Export";
