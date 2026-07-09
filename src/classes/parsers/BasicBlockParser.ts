@@ -81,8 +81,9 @@ export class BasicBlockParser extends BaseParser {
       if (parser.canParse(tokenStream)) return parser.parse(tokenStream);
     }
 
+    const nextToken = tokenStream.peek();
     throw new KinaAssertionError(
-      "Failed to parse node: No parser could parse the next token",
+      `Failed to parse node: No parser could parse the next token (kind: ${nextToken?.kind}, value: ${nextToken?.reconstruct()})`,
     );
   }
 }

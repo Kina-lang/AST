@@ -22,4 +22,6 @@ export * from "./_type";
 export * from "./PrimitiveTypeNode";
 export * from "./Struct";
 export * from "./StructField";
+export * from "./StructLiteralExpression";
+export * from "./StructLiteralField";
 export * from "./UserDefinedTypeNode";

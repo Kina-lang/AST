@@ -19,6 +19,7 @@ import { ExportParser } from "./ExportParser";
 import { TypeParser } from "./TypeParser";
 import { StructParser } from "./StructParser";
 import { StructFieldParser } from "./StructFieldParser";
+import { StructLiteralExpressionParser } from "./expressions/StructLiteralExpressionParser";
 
 export const Parsers = {
   File: new FileParser(),
@@ -42,4 +43,5 @@ export const Parsers = {
   Type: new TypeParser(),
   Struct: new StructParser(),
   StructField: new StructFieldParser(),
+  StructLiteralExpression: new StructLiteralExpressionParser(),
 };

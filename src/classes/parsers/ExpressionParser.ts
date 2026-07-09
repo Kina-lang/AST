@@ -41,6 +41,7 @@ export class ExpressionParser extends BaseParser {
     if (currentToken.kind === TokenKind.Identifier) return true;
     if (currentToken.kind === TokenKind.ParentheseOpen) return true;
     if (Parsers.UnaryExpression.canParse(tokenStream)) return true;
+    if (Parsers.StructLiteralExpression.canParse(tokenStream)) return true;
 
     return false;
   }
@@ -109,6 +110,10 @@ export class ExpressionParser extends BaseParser {
         expression,
       );
     }
+
+    // Struct literal expressions ({ field: value, ... })
+    if (Parsers.StructLiteralExpression.canParse(tokenStream))
+      return Parsers.StructLiteralExpression.parseExpression(tokenStream);
 
     throw new KinaAssertionError(
       "Failed to parse expression: No parser could parse the next token",
