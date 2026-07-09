@@ -1,9 +1,12 @@
+import { IdentifierToken, TokenKind } from "@kina-lang/lexer";
 import { KinaAssertionError } from "@kina-lang/utils";
 import type { TokenStream } from "../TokenStream";
 import { BaseParser } from "./_base";
 import { PrimitiveTypeNode } from "../nodes/PrimitiveTypeNode";
 import { KINA_TYPE_TOKENS } from "../../utils/type";
 import type { TypeBaseNode } from "../nodes/_type";
+import { UserDefinedTypeNode } from "../nodes/UserDefinedTypeNode";
+import { IdentifierExpressionNode } from "../nodes/IdentifierExpression";
 
 export class TypeParser extends BaseParser {
   constructor() {
@@ -32,6 +35,16 @@ export class TypeParser extends BaseParser {
 
     const typeToken = tokenStream.expectAny([...KINA_TYPE_TOKENS]);
 
-    return [new PrimitiveTypeNode(typeToken.span!, typeToken.kind as any)];
+    return [
+      typeToken.kind == TokenKind.Identifier
+        ? new UserDefinedTypeNode(
+            typeToken.span!,
+            new IdentifierExpressionNode(
+              { start: typeToken.span!.start, end: typeToken.span!.end },
+              (typeToken as IdentifierToken).value,
+            ),
+          )
+        : new PrimitiveTypeNode(typeToken.span!, typeToken.kind as any),
+    ];
   }
 }

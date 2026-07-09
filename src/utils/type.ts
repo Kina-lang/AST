@@ -6,4 +6,5 @@ export const KINA_TYPE_TOKENS = new Set([
   TokenKind.TypeBool,
   TokenKind.TypeString,
   TokenKind.TypePtr,
+  TokenKind.Identifier,
 ]);

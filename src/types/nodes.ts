@@ -28,6 +28,7 @@ export enum NodeKind {
   BasicBlock = "ast.BasicBlock",
 
   PrimitiveTypeNode = "ast.PrimitiveTypeNode",
+  UserDefinedTypeNode = "ast.UserDefinedTypeNode",
 }
 
 export interface NodeSpan {
