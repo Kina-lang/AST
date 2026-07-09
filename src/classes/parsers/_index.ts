@@ -17,6 +17,8 @@ import { IfStatementParser } from "./IfStatementParser";
 import { ImportParser } from "./ImportParser";
 import { ExportParser } from "./ExportParser";
 import { TypeParser } from "./TypeParser";
+import { StructParser } from "./StructParser";
+import { StructFieldParser } from "./StructFieldParser";
 
 export const Parsers = {
   File: new FileParser(),
@@ -38,4 +40,6 @@ export const Parsers = {
   Import: new ImportParser(),
   Export: new ExportParser(),
   Type: new TypeParser(),
+  Struct: new StructParser(),
+  StructField: new StructFieldParser(),
 };

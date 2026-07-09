@@ -20,6 +20,7 @@ export class KinaAST {
     Parsers.IfStatement,
     Parsers.Import,
     Parsers.Export,
+    Parsers.Struct,
     Parsers.ExpressionStatement, // MUST be last
   ];
 

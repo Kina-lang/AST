@@ -9,6 +9,8 @@ export enum NodeKind {
   Extern = "ast.Extern",
   Function = "ast.Function",
   FunctionParameter = "ast.FunctionParameter",
+  Struct = "ast.Struct",
+  StructField = "ast.StructField",
 
   ReturnStatement = "ast.ReturnStatement",
   ExpressionStatement = "ast.ExpressionStatement",
