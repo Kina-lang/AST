@@ -24,9 +24,13 @@ export class ImportParser extends BaseParser {
   override parse(tokenStream: TokenStream): BaseNode[] {
     const startToken = tokenStream.expect(TokenKind.KeywordImport);
 
-    tokenStream.expect(TokenKind.BraceOpen);
+    const braceOpen = tokenStream.match(TokenKind.BraceOpen);
+    //if (braceOpen) {
     const members = this.parseImportMembers(tokenStream);
     tokenStream.expect(TokenKind.BraceClose);
+    /*} else {
+      tokenStream.expect(TokenKind.Identifier);
+    }*/
 
     tokenStream.expect(TokenKind.KeywordFrom);
 

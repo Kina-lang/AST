@@ -31,6 +31,7 @@ export enum NodeKind {
 
   PrimitiveTypeNode = "ast.PrimitiveTypeNode",
   UserDefinedTypeNode = "ast.UserDefinedTypeNode",
+  FunctionTypeNode = "ast.FunctionTypeNode",
 }
 
 export interface NodeSpan {

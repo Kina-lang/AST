@@ -25,3 +25,4 @@ export * from "./StructField";
 export * from "./StructLiteralExpression";
 export * from "./StructLiteralField";
 export * from "./UserDefinedTypeNode";
+export * from "./FunctionTypeNode";

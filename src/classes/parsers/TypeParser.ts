@@ -7,6 +7,7 @@ import { KINA_TYPE_TOKENS } from "../../utils/type";
 import type { TypeBaseNode } from "../nodes/_type";
 import { UserDefinedTypeNode } from "../nodes/UserDefinedTypeNode";
 import { IdentifierExpressionNode } from "../nodes/IdentifierExpression";
+import { Parsers } from "./_index";
 
 export class TypeParser extends BaseParser {
   constructor() {
@@ -17,6 +18,16 @@ export class TypeParser extends BaseParser {
     const currentToken = tokenStream.peek();
     if (currentToken === null) return false;
     if (KINA_TYPE_TOKENS.has(currentToken.kind)) return true;
+    if (Parsers.FunctionType.canParse(tokenStream)) return true;
+
+    return false;
+  }
+
+  public canParseOffset(tokenStream: TokenStream, offset: number): boolean {
+    const currentToken = tokenStream.peekAhead(offset);
+    if (currentToken === null) return false;
+    if (KINA_TYPE_TOKENS.has(currentToken.kind)) return true;
+    if (Parsers.FunctionType.canParse(tokenStream, offset)) return true;
 
     return false;
   }
@@ -27,6 +38,9 @@ export class TypeParser extends BaseParser {
       throw new KinaAssertionError(
         "Unexpected end of token stream when parsing type",
       );
+
+    if (Parsers.FunctionType.canParse(tokenStream))
+      return Parsers.FunctionType.parse(tokenStream) as TypeBaseNode[];
 
     if (!KINA_TYPE_TOKENS.has(currentToken.kind))
       throw new KinaAssertionError(
