@@ -6,7 +6,7 @@ import { IdentifierExpressionNode } from "../nodes/IdentifierExpression";
 import { KinaAssertionError } from "@kina-lang/utils";
 import { Parsers } from "./_index";
 import { NodeKind } from "../../types/nodes";
-import { ExportNode, type FunctionNode } from "../..";
+import { ExportNode, type FunctionNode, type VariableDeclarationStatementNode, type StructNode } from "../..";
 
 export class ExportParser extends BaseParser {
   constructor() {
@@ -30,10 +30,12 @@ export class ExportParser extends BaseParser {
 
     if (
       target[0]!.kind !== NodeKind.Function &&
-      target[0]!.kind !== NodeKind.IdentifierExpression
+      target[0]!.kind !== NodeKind.IdentifierExpression &&
+      target[0]!.kind !== NodeKind.VariableDeclarationStatement &&
+      target[0]!.kind !== NodeKind.Struct
     )
       throw new KinaAssertionError(
-        "Expected function or identifier after 'export' keyword",
+        "Expected function, identifier, variable declaration, or struct after 'export' keyword",
       );
 
     return [
@@ -42,7 +44,11 @@ export class ExportParser extends BaseParser {
           start: startToken.span!.start,
           end: target[0]!.span!.end,
         },
-        target[0] as FunctionNode | IdentifierExpressionNode,
+        target[0] as
+          | FunctionNode
+          | IdentifierExpressionNode
+          | VariableDeclarationStatementNode
+          | StructNode,
       ),
     ];
   }
