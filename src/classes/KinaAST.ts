@@ -38,8 +38,8 @@ export class KinaAST {
    * @param tokens
    * @returns
    */
-  public build(tokens: BaseToken[]): FileNode {
-    const tokenStream = new TokenStream(tokens);
+  public build(tokens: BaseToken[], file: string): FileNode {
+    const tokenStream = new TokenStream(tokens, file);
 
     const parser = Parsers.File;
     if (!parser.canParse(tokenStream))

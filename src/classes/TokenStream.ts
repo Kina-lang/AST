@@ -1,11 +1,18 @@
 import { TokenKind, type BaseToken } from "@kina-lang/lexer";
+import {
+  Diagnostics,
+  DiagnosticsError,
+  DiagnosticsErrorCode,
+} from "@kina-lang/utils";
 
 export class TokenStream {
   private readonly _tokens: BaseToken[] = [];
   private _cursorPosition: number = 0;
+  private readonly _file: string;
 
-  constructor(tokens: BaseToken[]) {
+  constructor(tokens: BaseToken[], file: string) {
     this._tokens = tokens;
+    this._file = file;
   }
 
   /**
@@ -92,15 +99,32 @@ export class TokenStream {
    * @returns token
    * @throws when kind does not match
    */
-  public expect(kind: TokenKind): BaseToken {
+  public expect(kind: TokenKind): BaseToken | null {
     const result = this.match(kind);
     if (!result) {
       const actualToken = this.peek();
       const actualKind = actualToken ? actualToken.kind : TokenKind.EOF;
 
-      throw new Error(
-        "Syntax Error -> Expected " + kind + ", but got " + actualKind,
+      Diagnostics.report(
+        new DiagnosticsError(
+          DiagnosticsErrorCode.SyntaxError,
+          `Expected ${kind}, but got ${actualKind}`,
+          "error",
+          {
+            file: this._file,
+            span: actualToken?.span
+              ? [
+                  actualToken.span.start.line - 1,
+                  actualToken.span.start.column - 1,
+                  actualToken.span.end.line - 1,
+                  actualToken.span.end.column - 1,
+                ]
+              : [0, 0, 0, 0],
+          },
+        ),
       );
+
+      return null;
     }
 
     return result;
