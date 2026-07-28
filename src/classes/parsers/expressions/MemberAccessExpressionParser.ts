@@ -1,4 +1,4 @@
-import { KinaAssertionError } from "@kina-lang/utils";
+import { Diagnostics } from "@kina-lang/utils";
 import type { TokenStream } from "../../TokenStream";
 import { BaseParser } from "../_base";
 import type { BaseNode } from "../../nodes/_base";
@@ -20,9 +20,12 @@ export class MemberAccessExpressionParser extends ExpressionBaseParser {
     ) as IdentifierToken;
 
     return new MemberAccessExpressionNode(
-      { start: object.span!.start, end: propertyToken.span!.end },
+      {
+        start: object?.span?.start ?? { line: 0, column: 0 },
+        end: propertyToken?.span?.end ?? { line: 0, column: 0 },
+      },
       object,
-      propertyToken.value,
+      propertyToken?.value ?? "",
     );
   }
 }

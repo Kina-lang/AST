@@ -1,4 +1,4 @@
-import { KinaAssertionError } from "@kina-lang/utils";
+import { Diagnostics } from "@kina-lang/utils";
 import type { BaseNode } from "../nodes/_base";
 import { FileNode } from "../nodes/File";
 import type { TokenStream } from "../TokenStream";
@@ -21,7 +21,7 @@ export class FileParser extends BaseParser {
       const result = this.parseNext(tokenStream);
 
       if (result) nodes.push(...result);
-      else throw new KinaAssertionError("Failed to parse node");
+      else Diagnostics.throwInternal("Failed to parse node");
     }
 
     return [
@@ -42,8 +42,8 @@ export class FileParser extends BaseParser {
       if (parser.canParse(tokenStream)) return parser.parse(tokenStream);
     }
 
-    throw new KinaAssertionError(
-      "Failed to parse node: No parser could parse the next token",
+    Diagnostics.throwInternal(
+      `Failed to parse node: No parser could parse the next token`,
     );
   }
 }

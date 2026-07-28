@@ -32,10 +32,10 @@ export class IncludeDirectiveParser extends BaseParser {
     return [
       new IncludeDirectiveNode(
         {
-          start: start.span!.start,
-          end: (semicolon ?? end).span!.end,
+          start: start?.span?.start ?? { line: 0, column: 0 },
+          end: (semicolon ?? end)?.span?.end ?? { line: 0, column: 0 },
         },
-        getStringLiteralValue(identifierToken.value),
+        getStringLiteralValue(identifierToken?.value ?? '""'),
       ),
     ];
   }

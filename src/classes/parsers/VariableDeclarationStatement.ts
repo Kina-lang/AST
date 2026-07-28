@@ -2,9 +2,8 @@ import { IdentifierToken, TokenKind } from "@kina-lang/lexer";
 import type { BaseNode } from "../nodes/_base";
 import type { TokenStream } from "../TokenStream";
 import { BaseParser } from "./_base";
-import { KINA_TYPE_TOKENS } from "../../utils/type";
 import { Parsers } from "./_index";
-import { KinaAssertionError } from "@kina-lang/utils";
+import { Diagnostics, DiagnosticsErrorCode } from "@kina-lang/utils";
 import { VariableDeclarationStatementNode } from "../nodes/VariableDeclarationStatementNode";
 import type { TypeBaseNode } from "../nodes/_type";
 
@@ -34,15 +33,26 @@ export class VariableDeclarationStatementParser extends BaseParser {
     const identifierToken = tokenStream.expect(
       TokenKind.Identifier,
     ) as IdentifierToken;
-    tokenStream.expect(TokenKind.Colon);
 
-    const typeNode = Parsers.Type.parse(tokenStream)[0] as TypeBaseNode;
+    let typeNode: TypeBaseNode | undefined = undefined;
+    if (tokenStream.expect(TokenKind.Colon)) {
+      const types = Parsers.Type.parse(tokenStream);
+
+      if (types.length > 0) typeNode = types[0];
+    } else if (Parsers.Type.canParse(tokenStream)) {
+      const types = Parsers.Type.parse(tokenStream);
+
+      if (types.length > 0) typeNode = types[0];
+    }
+
     tokenStream.expect(TokenKind.OperatorAssign);
 
     const expression = Parsers.Expression.parse(tokenStream);
-    if (expression.length === 0)
-      throw new KinaAssertionError(
+    if (!expression || expression.length === 0)
+      Diagnostics.error(
+        DiagnosticsErrorCode.SyntaxError,
         "Failed to parse expression in variable declaration statement",
+        tokenStream.getDiagnosticsLocation(tokenStream.peek()),
       );
 
     const semicolonToken = tokenStream.match(TokenKind.Semicolon);
@@ -50,13 +60,14 @@ export class VariableDeclarationStatementParser extends BaseParser {
     return [
       new VariableDeclarationStatementNode(
         {
-          start: start.span!.start,
-          end: (semicolonToken ?? expression[0]!).span!.end,
+          start: start?.span?.start ?? { line: 0, column: 0 },
+          end: (semicolonToken ?? expression?.[0] ?? identifierToken ?? start)
+            ?.span?.end ?? { line: 0, column: 0 },
         },
-        identifierToken.value,
+        identifierToken?.value ?? "",
         typeNode,
-        start.kind === TokenKind.KeywordMutable,
-        expression[0]!,
+        start?.kind === TokenKind.KeywordMutable,
+        expression?.[0],
       ),
     ];
   }

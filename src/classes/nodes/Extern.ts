@@ -9,13 +9,13 @@ import type { TypeBaseNode } from "./_type";
 export class ExternNode extends BaseNode {
   protected readonly _name: string;
   protected readonly _parameterTypes: TypeBaseNode[];
-  protected readonly _returnType: TypeBaseNode;
+  protected readonly _returnType?: TypeBaseNode;
 
   constructor(
     span: NodeSpan,
     name: string,
     parameterTypes: TypeBaseNode[],
-    returnType: TypeBaseNode,
+    returnType: TypeBaseNode | undefined,
   ) {
     super(NodeKind.Extern, span);
 
@@ -32,21 +32,21 @@ export class ExternNode extends BaseNode {
     return this._parameterTypes;
   }
 
-  public get returnType(): TypeBaseNode {
+  public get returnType(): TypeBaseNode | undefined {
     return this._returnType;
   }
 
   public override export(): ReturnType<BaseNode["export"]> & {
     name: string;
     parameterTypes: ReturnType<TypeBaseNode["export"]>[];
-    returnType: ReturnType<TypeBaseNode["export"]>;
+    returnType?: ReturnType<TypeBaseNode["export"]>;
   } {
     const baseExport = super.export();
     return {
       ...baseExport,
       name: this._name,
       parameterTypes: this._parameterTypes.map((type) => type.export()),
-      returnType: this._returnType.export(),
+      returnType: this._returnType?.export(),
     };
   }
 }

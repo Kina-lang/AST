@@ -29,8 +29,11 @@ export class StructFieldParser extends BaseParser {
 
     return [
       new StructFieldNode(
-        { start: identifierToken.span!.start, end: typeNode.span!.end },
-        identifierToken.value,
+        {
+          start: identifierToken?.span?.start ?? { line: 0, column: 0 },
+          end: typeNode?.span?.end ?? { line: 0, column: 0 },
+        },
+        identifierToken?.value ?? "",
         typeNode,
       ),
     ];

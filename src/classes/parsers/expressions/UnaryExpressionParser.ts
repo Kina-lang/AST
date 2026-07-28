@@ -1,4 +1,4 @@
-import { KinaAssertionError } from "@kina-lang/utils";
+import { Diagnostics } from "@kina-lang/utils";
 import type { ExpressionBaseNode } from "../../nodes/_expression";
 import type { TokenStream } from "../../TokenStream";
 import { ExpressionBaseParser } from "./_base";
@@ -28,7 +28,7 @@ export class UnaryExpressionParser extends ExpressionBaseParser {
     const operator = KINA_PREFIX_OPERATORS.get(operatorToken.kind);
 
     if (!operator) {
-      throw new KinaAssertionError(
+      Diagnostics.throwInternal(
         `UnaryExpressionParser expected a prefix operator, got: ${operatorToken.kind}`,
       );
     }

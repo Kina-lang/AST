@@ -3,7 +3,7 @@ import type { BaseNode } from "../nodes/_base";
 import type { TokenStream } from "../TokenStream";
 import { BaseParser } from "./_base";
 import { IdentifierExpressionNode } from "../nodes/IdentifierExpression";
-import { KinaAssertionError } from "@kina-lang/utils";
+import { Diagnostics, DiagnosticsErrorCode } from "@kina-lang/utils";
 import { ImportNode } from "../nodes/Import";
 import { LiteralExpressionNode } from "../nodes/LiteralExpression";
 import { Parsers } from "./_index";
@@ -44,8 +44,8 @@ export class ImportParser extends BaseParser {
     return [
       new ImportNode(
         {
-          start: startToken.span!.start,
-          end: (endToken ?? sourceLiteral).span!.end,
+          start: startToken?.span?.start ?? { line: 0, column: 0 },
+          end: (endToken ?? sourceLiteral)?.span?.end ?? { line: 0, column: 0 },
         },
         members,
         sourceLiteral,
@@ -67,8 +67,17 @@ export class ImportParser extends BaseParser {
       const member = tokenStream.expect(
         TokenKind.Identifier,
       ) as IdentifierToken;
-      if (!member)
-        throw new KinaAssertionError("Expected identifier in import statement");
+      if (!member) {
+        Diagnostics.error(
+          DiagnosticsErrorCode.SyntaxError,
+          "Expected identifier in import statement",
+          tokenStream.getDiagnosticsLocation(currentToken),
+        );
+
+        tokenStream.advance();
+
+        continue;
+      }
 
       members.push(new IdentifierExpressionNode(member.span!, member.value));
 

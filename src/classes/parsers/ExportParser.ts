@@ -3,10 +3,15 @@ import type { BaseNode } from "../nodes/_base";
 import type { TokenStream } from "../TokenStream";
 import { BaseParser } from "./_base";
 import { IdentifierExpressionNode } from "../nodes/IdentifierExpression";
-import { KinaAssertionError } from "@kina-lang/utils";
+import { Diagnostics, DiagnosticsErrorCode } from "@kina-lang/utils";
 import { Parsers } from "./_index";
 import { NodeKind } from "../../types/nodes";
-import { ExportNode, type FunctionNode, type VariableDeclarationStatementNode, type StructNode } from "../..";
+import {
+  ExportNode,
+  type FunctionNode,
+  type VariableDeclarationStatementNode,
+  type StructNode,
+} from "../..";
 
 export class ExportParser extends BaseParser {
   constructor() {
@@ -25,23 +30,35 @@ export class ExportParser extends BaseParser {
     const startToken = tokenStream.expect(TokenKind.KeywordExport);
 
     const target = Parsers.File.parseNext(tokenStream);
-    if (!target || target.length !== 1)
-      throw new KinaAssertionError("Expected target after 'export' keyword");
+    if (!target || target.length !== 1) {
+      Diagnostics.error(
+        DiagnosticsErrorCode.SyntaxError,
+        "Expected target after 'export' keyword",
+        tokenStream.getDiagnosticsLocation(tokenStream.peek()),
+      );
+
+      return [];
+    }
 
     if (
       target[0]!.kind !== NodeKind.Function &&
       target[0]!.kind !== NodeKind.IdentifierExpression &&
       target[0]!.kind !== NodeKind.VariableDeclarationStatement &&
       target[0]!.kind !== NodeKind.Struct
-    )
-      throw new KinaAssertionError(
+    ) {
+      Diagnostics.error(
+        DiagnosticsErrorCode.SyntaxError,
         "Expected function, identifier, variable declaration, or struct after 'export' keyword",
+        tokenStream.getDiagnosticsLocation(tokenStream.peek()),
       );
+
+      return [];
+    }
 
     return [
       new ExportNode(
         {
-          start: startToken.span!.start,
+          start: startToken?.span?.start ?? { line: 0, column: 0 },
           end: target[0]!.span!.end,
         },
         target[0] as

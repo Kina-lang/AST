@@ -1,13 +1,13 @@
 import { TokenKind } from "@kina-lang/lexer";
-import { KinaAssertionError } from "@kina-lang/utils";
+import { Diagnostics } from "@kina-lang/utils";
 
 export function getStringLiteralValue(literal: string): string {
   const startChar = literal[0];
   const endChar = literal[literal.length - 1];
   if (startChar != "'" && startChar != '"')
-    throw new KinaAssertionError("Invalid string literal");
+    Diagnostics.throwInternal("Invalid string literal");
   if (endChar != startChar)
-    throw new KinaAssertionError("Invalid string literal");
+    Diagnostics.throwInternal("Invalid string literal");
 
   return unescapeStringLiteral(literal.slice(1, -1), startChar);
 }
@@ -19,7 +19,7 @@ export function unescapeStringLiteral(
   if (startChar == '"') return literal.replace(/\\"/g, '"');
   if (startChar == "'") return literal.replace(/\\'/g, "'");
 
-  throw new KinaAssertionError("Invalid string literal");
+  Diagnostics.throwInternal("Invalid string literal");
 }
 
 export const KINA_LITERAL_TOKENS = new Set([

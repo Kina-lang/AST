@@ -1,5 +1,5 @@
 import { IdentifierToken, TokenKind } from "@kina-lang/lexer";
-import { KinaAssertionError } from "@kina-lang/utils";
+import { Diagnostics, DiagnosticsErrorCode } from "@kina-lang/utils";
 import type { TokenStream } from "../TokenStream";
 import { BaseParser } from "./_base";
 import { PrimitiveTypeNode } from "../nodes/PrimitiveTypeNode";
@@ -35,30 +35,41 @@ export class TypeParser extends BaseParser {
   override parse(tokenStream: TokenStream): TypeBaseNode[] {
     const currentToken = tokenStream.peek();
     if (currentToken === null)
-      throw new KinaAssertionError(
+      Diagnostics.throwInternal(
         "Unexpected end of token stream when parsing type",
       );
 
     if (Parsers.FunctionType.canParse(tokenStream))
       return Parsers.FunctionType.parse(tokenStream) as TypeBaseNode[];
 
-    if (!KINA_TYPE_TOKENS.has(currentToken.kind))
-      throw new KinaAssertionError(
+    if (!KINA_TYPE_TOKENS.has(currentToken.kind)) {
+      Diagnostics.error(
+        DiagnosticsErrorCode.SyntaxError,
         `Unexpected token when parsing type: ${currentToken.kind}`,
+        tokenStream.getDiagnosticsLocation(currentToken),
       );
+      return [];
+    }
 
     const typeToken = tokenStream.expectAny([...KINA_TYPE_TOKENS]);
+    if (!typeToken) return [];
+
+    const defaultSpan = {
+      start: { line: 0, column: 0 },
+      end: { line: 0, column: 0 },
+    };
+    const span = typeToken?.span ?? defaultSpan;
 
     return [
       typeToken.kind == TokenKind.Identifier
         ? new UserDefinedTypeNode(
-            typeToken.span!,
+            span,
             new IdentifierExpressionNode(
-              { start: typeToken.span!.start, end: typeToken.span!.end },
-              (typeToken as IdentifierToken).value,
+              { start: span.start, end: span.end },
+              (typeToken as IdentifierToken)?.value ?? "",
             ),
           )
-        : new PrimitiveTypeNode(typeToken.span!, typeToken.kind as any),
+        : new PrimitiveTypeNode(span, typeToken.kind as any),
     ];
   }
 }

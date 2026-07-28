@@ -1,4 +1,4 @@
-import { KinaAssertionError } from "@kina-lang/utils";
+import { Diagnostics } from "@kina-lang/utils";
 import type { TokenStream } from "../../TokenStream";
 import type { BaseNode } from "../../nodes/_base";
 import type { ExpressionBaseNode } from "../../nodes/_expression";
@@ -21,7 +21,7 @@ export class BinaryExpressionParser extends ExpressionBaseParser {
     operator?: string,
   ): ExpressionBaseNode {
     if (!operator)
-      throw new KinaAssertionError(
+      Diagnostics.throwInternal(
         "BinaryExpressionParser parseExpression requires an operator to be provided.",
       );
 

@@ -39,8 +39,11 @@ export class ExternParser extends BaseParser {
 
     return [
       new ExternNode(
-        { start: start.span!.start, end: (semicolon ?? end).span!.end },
-        nameToken.value,
+        {
+          start: start?.span?.start ?? { line: 0, column: 0 },
+          end: (semicolon ?? end)?.span?.end ?? { line: 0, column: 0 },
+        },
+        nameToken?.value ?? "",
         parameterTypes,
         returnTypeNode,
       ),

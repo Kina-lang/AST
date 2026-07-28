@@ -1,5 +1,5 @@
 import { IdentifierToken, TokenKind } from "@kina-lang/lexer";
-import { KinaAssertionError } from "@kina-lang/utils";
+import { Diagnostics, DiagnosticsErrorCode } from "@kina-lang/utils";
 import type { TokenStream } from "../TokenStream";
 import { BaseParser } from "./_base";
 import { Parsers } from "./_index";
@@ -68,7 +68,7 @@ export class ExpressionParser extends BaseParser {
 
   private parsePrefix(tokenStream: TokenStream): ExpressionBaseNode {
     if (tokenStream.isAtEnd())
-      throw new KinaAssertionError(
+      Diagnostics.throwInternal(
         "Failed to parse expression: Unexpected end of input",
       );
 
@@ -89,8 +89,11 @@ export class ExpressionParser extends BaseParser {
       ) as IdentifierToken;
 
       return new IdentifierExpressionNode(
-        { start: identifierToken.span!.start, end: identifierToken.span!.end },
-        identifierToken.value,
+        {
+          start: identifierToken?.span?.start ?? { line: 0, column: 0 },
+          end: identifierToken?.span?.end ?? { line: 0, column: 0 },
+        },
+        identifierToken?.value ?? "",
       );
     }
 
@@ -106,7 +109,10 @@ export class ExpressionParser extends BaseParser {
       const end = tokenStream.expect(TokenKind.ParentheseClose);
 
       return new GroupExpressionNode(
-        { start: start.span!.start, end: end.span!.end },
+        {
+          start: start?.span?.start ?? { line: 0, column: 0 },
+          end: end?.span?.end ?? { line: 0, column: 0 },
+        },
         expression,
       );
     }
@@ -115,8 +121,8 @@ export class ExpressionParser extends BaseParser {
     if (Parsers.StructLiteralExpression.canParse(tokenStream))
       return Parsers.StructLiteralExpression.parseExpression(tokenStream);
 
-    throw new KinaAssertionError(
-      "Failed to parse expression: No parser could parse the next token",
+    Diagnostics.throwInternal(
+      `Failed to parse expression: No parser could parse token ${currentToken.kind}`,
     );
   }
 
@@ -125,7 +131,7 @@ export class ExpressionParser extends BaseParser {
     left: ExpressionBaseNode,
   ): ExpressionBaseNode {
     if (tokenStream.isAtEnd())
-      throw new KinaAssertionError(
+      Diagnostics.throwInternal(
         "Failed to parse expression: Unexpected end of input",
       );
 
@@ -145,9 +151,14 @@ export class ExpressionParser extends BaseParser {
         operatorString,
       );
 
-    throw new KinaAssertionError(
+    Diagnostics.error(
+      DiagnosticsErrorCode.SyntaxError,
       `Failed to parse expression: Unexpected infix token ${token.kind}`,
+      tokenStream.getDiagnosticsLocation(token),
     );
+
+    tokenStream.advance();
+    return left;
   }
 
   private getInfixPrecedence(tokenStream: TokenStream): number {

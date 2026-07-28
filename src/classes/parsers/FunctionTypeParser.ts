@@ -83,7 +83,10 @@ export class FunctionTypeParser extends BaseParser {
 
     return [
       new FunctionTypeNode(
-        { start: start.span!.start, end: returnType.span!.end },
+        {
+          start: start?.span?.start ?? { line: 0, column: 0 },
+          end: returnType?.span?.end ?? { line: 0, column: 0 },
+        },
         parameters,
         returnType,
       ),

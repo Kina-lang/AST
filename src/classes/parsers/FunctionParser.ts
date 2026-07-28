@@ -7,7 +7,6 @@ import { Parsers } from "./_index";
 import { FunctionNode } from "../nodes/Function";
 import type { TypeBaseNode } from "../nodes/_type";
 import { BasicBlockNode } from "../nodes/BasicBlock";
-import { KinaAssertionError } from "@kina-lang/utils";
 
 export class FunctionParser extends BaseParser {
   constructor() {
@@ -33,20 +32,30 @@ export class FunctionParser extends BaseParser {
     const parameters = this.parseParameters(tokenStream);
 
     tokenStream.expect(TokenKind.ParentheseClose);
-    tokenStream.expect(TokenKind.Colon);
 
-    const typeNode = Parsers.Type.parse(tokenStream)[0] as TypeBaseNode;
+    let typeNode: TypeBaseNode | undefined = undefined;
+    if (tokenStream.expect(TokenKind.Colon)) {
+      const typeNodes = Parsers.Type.parse(tokenStream);
 
-    const basicBlock = Parsers.BasicBlock.parse(
-      tokenStream,
-    )[0] as BasicBlockNode;
-    if (basicBlock === null)
-      throw new KinaAssertionError("Failed to parse function body");
+      if (typeNodes.length > 0) typeNode = typeNodes[0] as TypeBaseNode;
+    } else if (Parsers.Type.canParse(tokenStream)) {
+      const typeNodes = Parsers.Type.parse(tokenStream);
+
+      if (typeNodes.length > 0) typeNode = typeNodes[0] as TypeBaseNode;
+    }
+
+    const basicBlockNodes = Parsers.BasicBlock.canParse(tokenStream)
+      ? Parsers.BasicBlock.parse(tokenStream)
+      : [];
+    const basicBlock = basicBlockNodes[0] as BasicBlockNode;
 
     return [
       new FunctionNode(
-        { start: start.span!.start, end: basicBlock.span!.end },
-        identifierToken.value,
+        {
+          start: start?.span?.start ?? { line: 0, column: 0 },
+          end: basicBlock?.span?.end ?? { line: 0, column: 0 },
+        },
+        identifierToken?.value ?? "",
         parameters,
         typeNode,
         basicBlock,

@@ -3,7 +3,7 @@ import type { BaseNode } from "../../nodes/_base";
 import type { TokenStream } from "../../TokenStream";
 import { BaseParser } from "../_base";
 import { Parsers } from "../_index";
-import { KinaAssertionError } from "@kina-lang/utils";
+import { Diagnostics } from "@kina-lang/utils";
 import type { ExpressionBaseNode } from "../../nodes/_expression";
 import { KINA_EXPRESSION_PRECEDENCE } from "../../../utils/expression";
 import { CallExpressionNode } from "../../nodes/CallExpression";
@@ -46,7 +46,10 @@ export class CallExpressionParser extends ExpressionBaseParser {
     const end = tokenStream.expect(TokenKind.ParentheseClose);
 
     return new CallExpressionNode(
-      { start: callee.span!.start, end: end.span!.end },
+      {
+        start: callee?.span?.start ?? { line: 0, column: 0 },
+        end: end?.span?.end ?? { line: 0, column: 0 },
+      },
       callee,
       args,
     );

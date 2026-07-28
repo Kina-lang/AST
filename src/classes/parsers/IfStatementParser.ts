@@ -40,11 +40,14 @@ export class IfStatementParser extends BaseParser {
           : Parsers.BasicBlock.parseSingleStatement(tokenStream)[0]!;
     }
 
-    const end = elseBlock ? elseBlock.span!.end : thenBlock.span!.end;
+    const end = elseBlock ? elseBlock.span?.end : thenBlock?.span?.end;
 
     return [
       new IfStatementNode(
-        { start: start.span!.start, end },
+        {
+          start: start?.span?.start ?? { line: 0, column: 0 },
+          end: end ?? { line: 0, column: 0 },
+        },
         condition,
         thenBlock,
         elseBlock,

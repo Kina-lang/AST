@@ -34,8 +34,11 @@ export class StructParser extends BaseParser {
 
     return [
       new StructNode(
-        { start: start.span!.start, end: end?.span!.end || brace.span!.end },
-        identifierToken.value,
+        {
+          start: start?.span?.start ?? { line: 0, column: 0 },
+          end: end?.span?.end ?? brace?.span?.end ?? { line: 0, column: 0 },
+        },
+        identifierToken?.value ?? "",
         fields,
       ),
     ];

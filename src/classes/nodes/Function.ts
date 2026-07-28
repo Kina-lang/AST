@@ -7,15 +7,15 @@ import type { FunctionParameterNode } from "./FunctionParameter";
 export class FunctionNode extends BaseNode {
   protected readonly _name: string;
   protected readonly _parameters: FunctionParameterNode[];
-  protected readonly _returnType: TypeBaseNode;
-  protected readonly _body: BasicBlockNode;
+  protected readonly _returnType?: TypeBaseNode;
+  protected readonly _body?: BasicBlockNode;
 
   constructor(
     span: NodeSpan,
     name: string,
     parameters: FunctionParameterNode[],
-    returnType: TypeBaseNode,
-    body: BasicBlockNode,
+    returnType: TypeBaseNode | undefined,
+    body: BasicBlockNode | undefined,
   ) {
     super(NodeKind.Function, span);
 
@@ -33,27 +33,27 @@ export class FunctionNode extends BaseNode {
     return this._parameters;
   }
 
-  public get returnType(): TypeBaseNode {
+  public get returnType(): TypeBaseNode | undefined {
     return this._returnType;
   }
 
-  public get body(): BasicBlockNode {
+  public get body(): BasicBlockNode | undefined {
     return this._body;
   }
 
   public override export(): ReturnType<BaseNode["export"]> & {
     name: string;
     parameters: ReturnType<FunctionParameterNode["export"]>[];
-    returnType: ReturnType<TypeBaseNode["export"]>;
-    body: ReturnType<BasicBlockNode["export"]>;
+    returnType?: ReturnType<TypeBaseNode["export"]>;
+    body?: ReturnType<BasicBlockNode["export"]>;
   } {
     const baseExport = super.export();
     return {
       ...baseExport,
       name: this._name,
       parameters: this._parameters.map((param) => param.export()),
-      returnType: this._returnType.export(),
-      body: this._body.export(),
+      returnType: this._returnType?.export(),
+      body: this._body?.export(),
     };
   }
 }

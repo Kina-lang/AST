@@ -4,9 +4,9 @@ import type { TypeBaseNode } from "./_type";
 
 export class FunctionParameterNode extends BaseNode {
   protected readonly _name: string;
-  protected readonly _type: TypeBaseNode;
+  protected readonly _type?: TypeBaseNode;
 
-  constructor(span: NodeSpan, name: string, type: TypeBaseNode) {
+  constructor(span: NodeSpan, name: string, type: TypeBaseNode | undefined) {
     super(NodeKind.FunctionParameter, span);
 
     this._name = name;
@@ -17,19 +17,19 @@ export class FunctionParameterNode extends BaseNode {
     return this._name;
   }
 
-  public get type(): TypeBaseNode {
+  public get type(): TypeBaseNode | undefined {
     return this._type;
   }
 
   public override export(): ReturnType<BaseNode["export"]> & {
     name: string;
-    type: ReturnType<TypeBaseNode["export"]>;
+    type?: ReturnType<TypeBaseNode["export"]>;
   } {
     const baseExport = super.export();
     return {
       ...baseExport,
       name: this._name,
-      type: this._type.export(),
+      type: this._type?.export(),
     };
   }
 }

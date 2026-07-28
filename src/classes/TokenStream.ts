@@ -1,9 +1,5 @@
 import { TokenKind, type BaseToken } from "@kina-lang/lexer";
-import {
-  Diagnostics,
-  DiagnosticsError,
-  DiagnosticsErrorCode,
-} from "@kina-lang/utils";
+import { Diagnostics, DiagnosticsErrorCode } from "@kina-lang/utils";
 
 export class TokenStream {
   private readonly _tokens: BaseToken[] = [];
@@ -105,23 +101,10 @@ export class TokenStream {
       const actualToken = this.peek();
       const actualKind = actualToken ? actualToken.kind : TokenKind.EOF;
 
-      Diagnostics.report(
-        new DiagnosticsError(
-          DiagnosticsErrorCode.SyntaxError,
-          `Expected ${kind}, but got ${actualKind}`,
-          "error",
-          {
-            file: this._file,
-            span: actualToken?.span
-              ? [
-                  actualToken.span.start.line - 1,
-                  actualToken.span.start.column - 1,
-                  actualToken.span.end.line - 1,
-                  actualToken.span.end.column - 1,
-                ]
-              : [0, 0, 0, 0],
-          },
-        ),
+      Diagnostics.error(
+        DiagnosticsErrorCode.SyntaxError,
+        `Expected ${kind}, but got ${actualKind}`,
+        this.getDiagnosticsLocation(actualToken, actualToken),
       );
 
       return null;
@@ -130,20 +113,39 @@ export class TokenStream {
     return result;
   }
 
-  public expectAny(kinds: TokenKind[]): BaseToken {
+  public expectAny(kinds: TokenKind[]): BaseToken | null {
     const result = this.matchAny(kinds);
     if (!result) {
       const actualToken = this.peek();
       const actualKind = actualToken ? actualToken.kind : TokenKind.EOF;
 
-      throw new Error(
-        "Syntax Error -> Expected one of " +
-          kinds.join(", ") +
-          ", but got " +
-          actualKind,
+      Diagnostics.error(
+        DiagnosticsErrorCode.SyntaxError,
+        `Expected one of ${kinds.join(", ")}, but got ${actualKind}`,
+        this.getDiagnosticsLocation(actualToken, actualToken),
       );
+
+      return null;
     }
 
     return result;
+  }
+
+  public getDiagnosticsLocation(
+    startToken: BaseToken | null,
+    endToken: BaseToken | null = startToken,
+  ): { file: string; span: [number, number, number, number] } {
+    const start = startToken?.span?.start;
+    const end = (endToken ?? startToken)?.span?.end;
+
+    return {
+      file: this._file,
+      span: [
+        (start?.line ?? 1) - 1,
+        (start?.column ?? 1) - 1,
+        (end?.line ?? start?.line ?? 1) - 1,
+        (end?.column ?? start?.column ?? 1) - 1,
+      ],
+    };
   }
 }

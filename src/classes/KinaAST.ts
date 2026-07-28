@@ -2,7 +2,7 @@ import type { BaseToken } from "@kina-lang/lexer";
 import type { BaseParser } from "./parsers/_base";
 import type { FileNode } from "./nodes/File";
 import { Parsers } from "./parsers/_index";
-import { KinaAssertionError } from "@kina-lang/utils";
+import { Diagnostics } from "@kina-lang/utils";
 import { TokenStream } from "./TokenStream";
 
 export class KinaAST {
@@ -43,7 +43,7 @@ export class KinaAST {
 
     const parser = Parsers.File;
     if (!parser.canParse(tokenStream))
-      throw new KinaAssertionError("Cannot parse tokens with any parser");
+      Diagnostics.throwInternal("Cannot parse tokens with any parser");
 
     return parser.parse(tokenStream)[0];
   }

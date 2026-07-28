@@ -1,12 +1,9 @@
-import { KinaAssertionError } from "@kina-lang/utils";
-import { NodeKind, type NodeSpan } from "../../../types/nodes";
+import { Diagnostics, DiagnosticsErrorCode } from "@kina-lang/utils";
 import {
   getStringLiteralValue,
   KINA_LITERAL_TOKENS,
 } from "../../../utils/literal";
-import type { BaseNode } from "../../nodes/_base";
 import type { TokenStream } from "../../TokenStream";
-import { BaseParser } from "../_base";
 import {
   LiteralBooleanToken,
   LiteralStringToken,
@@ -32,17 +29,27 @@ export class LiteralExpressionParser extends ExpressionBaseParser {
 
   override parseExpression(tokenStream: TokenStream): ExpressionBaseNode {
     const literalToken = tokenStream.expectAny([...KINA_LITERAL_TOKENS]);
-    if (literalToken === null)
-      throw new KinaAssertionError("Failed to parse literal expression");
+    if (literalToken === null) {
+      Diagnostics.error(
+        DiagnosticsErrorCode.SyntaxError,
+        "Failed to parse literal expression",
+        tokenStream.getDiagnosticsLocation(tokenStream.peek()),
+      );
+
+      return null as any;
+    }
 
     let value: string;
-    if (literalToken.kind == TokenKind.LiteralString)
+    if (literalToken?.kind == TokenKind.LiteralString)
       value = getStringLiteralValue((literalToken as LiteralStringToken).value);
-    else value = (literalToken as LiteralBooleanToken).value;
+    else value = (literalToken as LiteralBooleanToken)?.value ?? "";
 
     return new LiteralExpressionNode(
-      { start: literalToken.span!.start, end: literalToken.span!.end },
-      literalToken.kind as KinaLiteralTokenKind,
+      {
+        start: literalToken?.span?.start ?? { line: 0, column: 0 },
+        end: literalToken?.span?.end ?? { line: 0, column: 0 },
+      },
+      (literalToken?.kind ?? TokenKind.LiteralString) as KinaLiteralTokenKind,
       value,
     );
   }

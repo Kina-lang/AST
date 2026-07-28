@@ -50,8 +50,11 @@ export class StructLiteralExpressionParser {
 
       fields.push(
         new StructLiteralFieldNode(
-          { start: identifierToken.span!.start, end: value.span!.end },
-          identifierToken.value,
+          {
+            start: identifierToken?.span?.start ?? { line: 0, column: 0 },
+            end: value?.span?.end ?? { line: 0, column: 0 },
+          },
+          identifierToken?.value ?? "",
           value,
         ),
       );
@@ -64,7 +67,10 @@ export class StructLiteralExpressionParser {
     const end = tokenStream.expect(TokenKind.BraceClose);
 
     return new StructLiteralExpressionNode(
-      { start: start.span!.start, end: end.span!.end },
+      {
+        start: start?.span?.start ?? { line: 0, column: 0 },
+        end: end?.span?.end ?? { line: 0, column: 0 },
+      },
       fields,
     );
   }

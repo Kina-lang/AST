@@ -4,7 +4,7 @@ import type { ExpressionBaseNode } from "../nodes/_expression";
 import type { TokenStream } from "../TokenStream";
 import { BaseParser } from "./_base";
 import { Parsers } from "./_index";
-import { KinaAssertionError } from "@kina-lang/utils";
+import { Diagnostics } from "@kina-lang/utils";
 import { ReturnStatementNode } from "../nodes/ReturnStatement";
 
 export class ReturnStatementParser extends BaseParser {
@@ -39,8 +39,8 @@ export class ReturnStatementParser extends BaseParser {
     return [
       new ReturnStatementNode(
         {
-          start: start.span!.start,
-          end: (endToken ?? semicolonToken ?? value ?? start).span!.end,
+          start: start?.span?.start ?? { line: 0, column: 0 },
+          end: (endToken ?? semicolonToken ?? value ?? start)?.span?.end ?? { line: 0, column: 0 },
         },
         value,
       ),

@@ -5,16 +5,16 @@ import type { ExpressionBaseNode } from "./_expression";
 
 export class VariableDeclarationStatementNode extends BaseNode {
   private readonly _name: string;
-  private readonly _type: TypeBaseNode;
+  private readonly _type?: TypeBaseNode;
   private readonly _isMutable: boolean;
-  private readonly _value: ExpressionBaseNode;
+  private readonly _value?: ExpressionBaseNode;
 
   constructor(
     span: NodeSpan,
     name: string,
-    type: TypeBaseNode,
+    type: TypeBaseNode | undefined,
     isMutable: boolean,
-    value: ExpressionBaseNode,
+    value: ExpressionBaseNode | undefined,
   ) {
     super(NodeKind.VariableDeclarationStatement, span);
 
@@ -28,7 +28,7 @@ export class VariableDeclarationStatementNode extends BaseNode {
     return this._name;
   }
 
-  public get type(): TypeBaseNode {
+  public get type(): TypeBaseNode | undefined {
     return this._type;
   }
 
@@ -36,23 +36,23 @@ export class VariableDeclarationStatementNode extends BaseNode {
     return this._isMutable;
   }
 
-  public get value(): ExpressionBaseNode {
+  public get value(): ExpressionBaseNode | undefined {
     return this._value;
   }
 
   public override export(): ReturnType<BaseNode["export"]> & {
     name: string;
-    type: ReturnType<TypeBaseNode["export"]>;
+    type?: ReturnType<TypeBaseNode["export"]>;
     isMutable: boolean;
-    value: ReturnType<ExpressionBaseNode["export"]>;
+    value?: ReturnType<ExpressionBaseNode["export"]>;
   } {
     const baseExport = super.export();
     return {
       ...baseExport,
       name: this._name,
-      type: this._type.export(),
+      type: this._type?.export(),
       isMutable: this._isMutable,
-      value: this._value.export(),
+      value: this._value?.export(),
     };
   }
 }

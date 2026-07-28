@@ -4,7 +4,7 @@ import type { TokenStream } from "../TokenStream";
 import { BaseParser } from "./_base";
 import { BasicBlockNode } from "../nodes/BasicBlock";
 import { KinaAST } from "../KinaAST";
-import { KinaAssertionError } from "@kina-lang/utils";
+import { Diagnostics } from "@kina-lang/utils";
 
 export class BasicBlockParser extends BaseParser {
   constructor() {
@@ -38,7 +38,10 @@ export class BasicBlockParser extends BaseParser {
 
     return [
       new BasicBlockNode(
-        { start: start.span!.start, end: (semicolon ?? end).span!.end },
+        {
+          start: start?.span?.start ?? { line: 0, column: 0 },
+          end: (semicolon ?? end)?.span?.end ?? { line: 0, column: 0 },
+        },
         nodes,
       ),
     ];
@@ -63,11 +66,10 @@ export class BasicBlockParser extends BaseParser {
     return [
       new BasicBlockNode(
         {
-          start: nodes[0]!.span!.start ?? tokenStream.peek()!.span!.start ?? 0,
-          end:
-            nodes[nodes.length - 1]!.span!.end ??
-            tokenStream.peek()!.span!.end ??
-            0,
+          start: nodes[0]?.span?.start ??
+            tokenStream.peek()?.span?.start ?? { line: 0, column: 0 },
+          end: nodes[nodes.length - 1]?.span?.end ??
+            tokenStream.peek()?.span?.end ?? { line: 0, column: 0 },
         },
         nodes,
       ),
@@ -82,7 +84,7 @@ export class BasicBlockParser extends BaseParser {
     }
 
     const nextToken = tokenStream.peek();
-    throw new KinaAssertionError(
+    Diagnostics.throwInternal(
       `Failed to parse node: No parser could parse the next token (kind: ${nextToken?.kind}, value: ${nextToken?.reconstruct()})`,
     );
   }
