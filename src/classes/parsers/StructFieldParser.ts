@@ -1,41 +1,24 @@
-import { IdentifierToken, TokenKind } from "@kina-lang/lexer";
-import type { TokenStream } from "../TokenStream";
-import { BaseParser } from "./_base";
-import { Parsers } from "./_index";
-import type { TypeBaseNode } from "../nodes/_type";
-import { StructFieldNode } from "../nodes/StructField";
+import { LexerTokenType } from "@kina-lang/lexer";
+import type { StructFieldTreeNode } from "../../types/tree";
+import type { TreeContext } from "../TreeContext";
+import { Parsers, type Parser } from "./Parser";
+import { TreeNodes } from "../TreeNodes";
 
-export class StructFieldParser extends BaseParser {
-  constructor() {
-    super();
-  }
+export class StructFieldParser implements Parser<StructFieldTreeNode> {
+  parse(ctx: TreeContext): StructFieldTreeNode | null {
+    const nameNode = ctx.scanner.expect(LexerTokenType.Identifier);
+    if (!nameNode) return null;
 
-  override canParse(tokenStream: TokenStream): boolean {
-    const currentToken = tokenStream.peek();
-    if (currentToken === null) return false;
-    if (currentToken.kind !== TokenKind.Identifier) return false;
+    ctx.scanner.expect(LexerTokenType.Colon);
+    const typeAnnotationNode = Parsers.TypeAnnotation.parse(ctx);
 
-    return true;
-  }
-
-  override parse(tokenStream: TokenStream): StructFieldNode[] {
-    const identifierToken = tokenStream.expect(
-      TokenKind.Identifier,
-    ) as IdentifierToken;
-
-    tokenStream.expect(TokenKind.Colon);
-
-    const typeNode = Parsers.Type.parse(tokenStream)[0] as TypeBaseNode;
-
-    return [
-      new StructFieldNode(
-        {
-          start: identifierToken?.span?.start ?? { line: 0, column: 0 },
-          end: typeNode?.span?.end ?? { line: 0, column: 0 },
-        },
-        identifierToken?.value ?? "",
-        typeNode,
+    return TreeNodes.createStructFieldNode(
+      TreeNodes.tokenToIdentifierNode(nameNode),
+      typeAnnotationNode,
+      TreeNodes.mergeSpans(
+        nameNode?.span ?? null,
+        typeAnnotationNode?.span ?? null,
       ),
-    ];
+    );
   }
 }

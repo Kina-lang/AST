@@ -1,81 +1,54 @@
-import { IdentifierToken, TokenKind } from "@kina-lang/lexer";
-import type { BaseNode } from "../nodes/_base";
-import type { TokenStream } from "../TokenStream";
-import { BaseParser } from "./_base";
-import type { FunctionParameterNode } from "../nodes/FunctionParameter";
-import { Parsers } from "./_index";
-import { FunctionNode } from "../nodes/Function";
-import type { TypeBaseNode } from "../nodes/_type";
-import { BasicBlockNode } from "../nodes/BasicBlock";
+import { LexerTokenType } from "@kina-lang/lexer";
+import type {
+  FunctionParameterTreeNode,
+  FunctionTreeNode,
+} from "../../types/tree";
+import type { TreeContext } from "../TreeContext";
+import { Parsers, type Parser } from "./Parser";
+import { TreeNodes } from "../TreeNodes";
 
-export class FunctionParser extends BaseParser {
-  constructor() {
-    super();
-  }
+export class FunctionParser implements Parser<FunctionTreeNode> {
+  public parse(ctx: TreeContext): FunctionTreeNode | null {
+    const funcKeyword = ctx.scanner.expect(LexerTokenType.KeywordFunction);
+    const identifier = ctx.scanner.expect(LexerTokenType.Identifier);
 
-  override canParse(tokenStream: TokenStream): boolean {
-    const currentToken = tokenStream.peek();
-    if (currentToken === null) return false;
-    if (currentToken.kind !== TokenKind.KeywordFunction) return false;
+    const modifiers = ctx.consumeModifiers();
 
-    return true;
-  }
+    const parameters: FunctionParameterTreeNode[] = [];
+    ctx.scanner.expect(LexerTokenType.LeftParen);
 
-  override parse(tokenStream: TokenStream): BaseNode[] {
-    const start = tokenStream.expect(TokenKind.KeywordFunction);
-    const identifierToken = tokenStream.expect(
-      TokenKind.Identifier,
-    ) as IdentifierToken;
+    // Parse parameters
+    while (!ctx.scanner.isAtEnd) {
+      if (ctx.scanner.check(LexerTokenType.RightParen)) break;
 
-    tokenStream.expect(TokenKind.ParentheseOpen);
+      const parameter = Parsers.FunctionParameter.parse(ctx);
+      if (parameter) parameters.push(parameter);
 
-    const parameters = this.parseParameters(tokenStream);
+      if (ctx.scanner.check(LexerTokenType.RightParen)) break;
 
-    tokenStream.expect(TokenKind.ParentheseClose);
-
-    let typeNode: TypeBaseNode | undefined = undefined;
-    if (tokenStream.expect(TokenKind.Colon)) {
-      const typeNodes = Parsers.Type.parse(tokenStream);
-
-      if (typeNodes.length > 0) typeNode = typeNodes[0] as TypeBaseNode;
-    } else if (Parsers.Type.canParse(tokenStream)) {
-      const typeNodes = Parsers.Type.parse(tokenStream);
-
-      if (typeNodes.length > 0) typeNode = typeNodes[0] as TypeBaseNode;
+      ctx.scanner.expect(LexerTokenType.Comma);
     }
 
-    const basicBlockNodes = Parsers.BasicBlock.canParse(tokenStream)
-      ? Parsers.BasicBlock.parse(tokenStream)
-      : [];
-    const basicBlock = basicBlockNodes[0] as BasicBlockNode;
+    ctx.scanner.expect(LexerTokenType.RightParen);
+    ctx.scanner.expect(LexerTokenType.Colon);
 
-    return [
-      new FunctionNode(
-        {
-          start: start?.span?.start ?? { line: 0, column: 0 },
-          end: basicBlock?.span?.end ?? { line: 0, column: 0 },
-        },
-        identifierToken?.value ?? "",
-        parameters,
-        typeNode,
-        basicBlock,
+    const typeAnnotation = Parsers.TypeAnnotation.parse(ctx);
+
+    const body = Parsers.BasicBlock.parse(ctx);
+
+    return TreeNodes.createFunctionNode(
+      TreeNodes.tokenToIdentifierNode(identifier),
+      parameters,
+      typeAnnotation,
+      body,
+      modifiers,
+      TreeNodes.mergeSpans(
+        funcKeyword?.span ?? null,
+        identifier?.span ?? null,
+        ...parameters.map((p) => p.span ?? null),
+        typeAnnotation?.span ?? null,
+        body?.span ?? null,
       ),
-    ];
-  }
-
-  private parseParameters(tokenStream: TokenStream): FunctionParameterNode[] {
-    const parameters: FunctionParameterNode[] = [];
-
-    while (!tokenStream.isAtEnd()) {
-      if (!Parsers.FunctionParameter.canParse(tokenStream)) break;
-
-      const parameterNodes = Parsers.FunctionParameter.parse(tokenStream);
-      parameters.push(...parameterNodes);
-
-      const comma = tokenStream.match(TokenKind.Comma);
-      if (comma === null) break;
-    }
-
-    return parameters;
+    );
   }
 }

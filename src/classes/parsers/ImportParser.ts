@@ -1,89 +1,49 @@
-import { IdentifierToken, TokenKind } from "@kina-lang/lexer";
-import type { BaseNode } from "../nodes/_base";
-import type { TokenStream } from "../TokenStream";
-import { BaseParser } from "./_base";
-import { IdentifierExpressionNode } from "../nodes/IdentifierExpression";
+import { LexerTokenType } from "@kina-lang/lexer";
+import type { ImportMemberTreeNode, ImportTreeNode } from "../../types/tree";
+import type { TreeContext } from "../TreeContext";
+import { Parsers, type Parser } from "./Parser";
+import { TreeNodes } from "../TreeNodes";
+import { TreeLiteralType } from "../../types/type";
 import { Diagnostics, DiagnosticsErrorCode } from "@kina-lang/utils";
-import { ImportNode } from "../nodes/Import";
-import { LiteralExpressionNode } from "../nodes/LiteralExpression";
-import { Parsers } from "./_index";
 
-export class ImportParser extends BaseParser {
-  constructor() {
-    super();
-  }
+export class ImportParser implements Parser<ImportTreeNode> {
+  parse(ctx: TreeContext): ImportTreeNode | null {
+    const importKeyword = ctx.scanner.expect(LexerTokenType.KeywordImport);
+    if (!importKeyword) return null;
 
-  override canParse(tokenStream: TokenStream): boolean {
-    const currentToken = tokenStream.peek();
-    if (currentToken === null) return false;
-    if (currentToken.kind !== TokenKind.KeywordImport) return false;
+    ctx.scanner.expect(LexerTokenType.LeftBrace);
 
-    return true;
-  }
+    let memberNodes: ImportMemberTreeNode[] = [];
+    while (!ctx.scanner.isAtEnd) {
+      const currentToken = ctx.scanner.peek();
+      if (!currentToken || currentToken.type === LexerTokenType.RightBrace)
+        break;
 
-  override parse(tokenStream: TokenStream): BaseNode[] {
-    const startToken = tokenStream.expect(TokenKind.KeywordImport);
+      const memberNode = Parsers.ImportMember.parse(ctx);
+      if (!memberNode) break;
 
-    const braceOpen = tokenStream.match(TokenKind.BraceOpen);
-    //if (braceOpen) {
-    const members = this.parseImportMembers(tokenStream);
-    tokenStream.expect(TokenKind.BraceClose);
-    /*} else {
-      tokenStream.expect(TokenKind.Identifier);
-    }*/
+      memberNodes.push(memberNode);
 
-    tokenStream.expect(TokenKind.KeywordFrom);
-
-    const extern = tokenStream.match(TokenKind.KeywordExtern) !== null;
-    const sourceLiteral = Parsers.Expression.parseExpression(
-      tokenStream,
-    ) as LiteralExpressionNode;
-
-    const endToken = tokenStream.match(TokenKind.Semicolon);
-
-    return [
-      new ImportNode(
-        {
-          start: startToken?.span?.start ?? { line: 0, column: 0 },
-          end: (endToken ?? sourceLiteral)?.span?.end ?? { line: 0, column: 0 },
-        },
-        members,
-        sourceLiteral,
-        extern,
-      ),
-    ];
-  }
-
-  private parseImportMembers(
-    tokenStream: TokenStream,
-  ): IdentifierExpressionNode[] {
-    const members: IdentifierExpressionNode[] = [];
-
-    while (!tokenStream.isAtEnd()) {
-      const currentToken = tokenStream.peek();
-      if (currentToken === null) break;
-      if (currentToken.kind === TokenKind.BraceClose) break;
-
-      const member = tokenStream.expect(
-        TokenKind.Identifier,
-      ) as IdentifierToken;
-      if (!member) {
-        Diagnostics.error(
-          DiagnosticsErrorCode.SyntaxError,
-          "Expected identifier in import statement",
-          tokenStream.getDiagnosticsLocation(currentToken),
-        );
-
-        tokenStream.advance();
-
-        continue;
-      }
-
-      members.push(new IdentifierExpressionNode(member.span!, member.value));
-
-      if (!tokenStream.match(TokenKind.Comma)) break;
+      if (!ctx.scanner.match(LexerTokenType.Comma)) break;
     }
 
-    return members;
+    ctx.scanner.expect(LexerTokenType.RightBrace);
+
+    ctx.scanner.expect(LexerTokenType.KeywordFrom);
+    const sourceNode = Parsers.LiteralExpression.parse(ctx);
+    if (sourceNode && sourceNode.literalType !== TreeLiteralType.String)
+      Diagnostics.error(
+        DiagnosticsErrorCode.SyntaxError,
+        `Expected a string literal for the import source, but got ${sourceNode.literalType}`,
+      );
+
+    return TreeNodes.createImportNode(
+      memberNodes,
+      sourceNode,
+      TreeNodes.mergeSpans(
+        importKeyword?.span ?? null,
+        sourceNode?.span ?? null,
+      ),
+    );
   }
 }

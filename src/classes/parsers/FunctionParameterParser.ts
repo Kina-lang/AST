@@ -1,42 +1,23 @@
-import { IdentifierToken, TokenKind } from "@kina-lang/lexer";
-import type { BaseNode } from "../nodes/_base";
-import type { TokenStream } from "../TokenStream";
-import { BaseParser } from "./_base";
-import { FunctionParameterNode } from "../nodes/FunctionParameter";
-import { Parsers } from "./_index";
-import type { TypeBaseNode } from "../nodes/_type";
+import { LexerTokenType } from "@kina-lang/lexer";
+import type { TreeContext } from "../TreeContext";
+import { Parsers, type Parser } from "./Parser";
+import { TreeNodes } from "../TreeNodes";
+import type { FunctionParameterTreeNode } from "../../types/tree";
 
-export class FunctionParameterParser extends BaseParser {
-  constructor() {
-    super();
-  }
+export class FunctionParameterParser implements Parser<FunctionParameterTreeNode> {
+  parse(ctx: TreeContext): FunctionParameterTreeNode | null {
+    const identifier = ctx.scanner.expect(LexerTokenType.Identifier);
+    ctx.scanner.expect(LexerTokenType.Colon);
 
-  override canParse(tokenStream: TokenStream): boolean {
-    const currentToken = tokenStream.peek();
-    if (currentToken === null) return false;
-    if (currentToken.kind !== TokenKind.Identifier) return false;
+    const typeAnnotation = Parsers.TypeAnnotation.parse(ctx);
 
-    return true;
-  }
-
-  override parse(tokenStream: TokenStream): FunctionParameterNode[] {
-    const identifierToken = tokenStream.expect(
-      TokenKind.Identifier,
-    ) as IdentifierToken;
-
-    tokenStream.expect(TokenKind.Colon);
-
-    const typeNode = Parsers.Type.parse(tokenStream)[0] as TypeBaseNode;
-
-    return [
-      new FunctionParameterNode(
-        {
-          start: identifierToken?.span?.start ?? { line: 0, column: 0 },
-          end: typeNode?.span?.end ?? identifierToken?.span?.end ?? { line: 0, column: 0 },
-        },
-        identifierToken?.value ?? "",
-        typeNode,
+    return TreeNodes.createFunctionParameterNode(
+      TreeNodes.tokenToIdentifierNode(identifier),
+      typeAnnotation,
+      TreeNodes.mergeSpans(
+        identifier?.span ?? null,
+        typeAnnotation?.span ?? null,
       ),
-    ];
+    );
   }
 }

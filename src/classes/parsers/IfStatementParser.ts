@@ -1,57 +1,36 @@
-import { TokenKind } from "@kina-lang/lexer";
-import type { BaseNode } from "../nodes/_base";
-import type { TokenStream } from "../TokenStream";
-import { BaseParser } from "./_base";
-import { Parsers } from "./_index";
-import { IfStatementNode } from "../nodes/IfStatement";
-import type { BasicBlockNode } from "../nodes/BasicBlock";
+import { LexerTokenType } from "@kina-lang/lexer";
+import type { IfStatementTreeNode } from "../../types/tree";
+import type { TreeContext } from "../TreeContext";
+import { Parsers, type Parser } from "./Parser";
+import { TreeNodes } from "../TreeNodes";
 
-export class IfStatementParser extends BaseParser {
-  constructor() {
-    super();
-  }
+export class IfStatementParser implements Parser<IfStatementTreeNode> {
+  parse(ctx: TreeContext): IfStatementTreeNode | null {
+    const ifKeyword = ctx.scanner.expect(LexerTokenType.KeywordIf);
+    if (!ifKeyword) return null;
 
-  override canParse(tokenStream: TokenStream): boolean {
-    const currentToken = tokenStream.peek();
-    if (currentToken === null) return false;
-    if (currentToken.kind !== TokenKind.KeywordIf) return false;
+    ctx.scanner.expect(LexerTokenType.LeftParen);
+    const conditionNode = Parsers.Expression.parse(ctx);
+    ctx.scanner.expect(LexerTokenType.RightParen);
 
-    return true;
-  }
+    const thenBlockNode = Parsers.BasicBlock.parse(ctx, true);
 
-  override parse(tokenStream: TokenStream): BaseNode[] {
-    const start = tokenStream.expect(TokenKind.KeywordIf);
-
-    tokenStream.expect(TokenKind.ParentheseOpen);
-    const condition = Parsers.Expression.parse(tokenStream)[0]!;
-    tokenStream.expect(TokenKind.ParentheseClose);
-
-    const thenBlock =
-      tokenStream.peek()?.kind == TokenKind.BraceOpen
-        ? Parsers.BasicBlock.parse(tokenStream)[0]!
-        : Parsers.BasicBlock.parseSingleStatement(tokenStream)[0]!;
-
-    let elseBlock: BasicBlockNode | null = null;
-
-    if (tokenStream.match(TokenKind.KeywordElse)) {
-      elseBlock =
-        tokenStream.peek()?.kind == TokenKind.BraceOpen
-          ? Parsers.BasicBlock.parse(tokenStream)[0]!
-          : Parsers.BasicBlock.parseSingleStatement(tokenStream)[0]!;
+    let elseBlockNode = null;
+    if (ctx.scanner.check(LexerTokenType.KeywordElse)) {
+      ctx.scanner.advance();
+      elseBlockNode = Parsers.BasicBlock.parse(ctx, true);
     }
 
-    const end = elseBlock ? elseBlock.span?.end : thenBlock?.span?.end;
-
-    return [
-      new IfStatementNode(
-        {
-          start: start?.span?.start ?? { line: 0, column: 0 },
-          end: end ?? { line: 0, column: 0 },
-        },
-        condition,
-        thenBlock,
-        elseBlock,
+    return TreeNodes.createIfStatementNode(
+      conditionNode,
+      thenBlockNode,
+      elseBlockNode,
+      TreeNodes.mergeSpans(
+        ifKeyword?.span ?? null,
+        conditionNode?.span ?? null,
+        thenBlockNode?.span ?? null,
+        elseBlockNode?.span ?? null,
       ),
-    ];
+    );
   }
 }

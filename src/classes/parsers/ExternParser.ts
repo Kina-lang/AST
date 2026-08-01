@@ -1,74 +1,44 @@
-import { IdentifierToken, TokenKind } from "@kina-lang/lexer";
-import type { BaseNode } from "../nodes/_base";
-import type { TokenStream } from "../TokenStream";
-import { BaseParser } from "./_base";
-import { Parsers } from "./_index";
-import { ExternNode } from "../nodes/Extern";
-import type { TypeBaseNode } from "../nodes/_type";
+import { LexerTokenType } from "@kina-lang/lexer";
+import type { ExternTreeNode } from "../../types/tree";
+import type { TreeContext } from "../TreeContext";
+import { Parsers, type Parser } from "./Parser";
+import { TreeNodes } from "../TreeNodes";
 
-export class ExternParser extends BaseParser {
-  constructor() {
-    super();
-  }
+export class ExternParser implements Parser<ExternTreeNode> {
+  parse(ctx: TreeContext): ExternTreeNode | null {
+    const externToken = ctx.scanner.expect(LexerTokenType.KeywordExtern);
+    if (!externToken) return null;
 
-  override canParse(tokenStream: TokenStream): boolean {
-    const currentToken = tokenStream.peek();
-    if (currentToken === null) return false;
-    if (currentToken.kind !== TokenKind.KeywordExtern) return false;
+    const nameNode = ctx.scanner.expect(LexerTokenType.Identifier);
 
-    return true;
-  }
+    ctx.scanner.expect(LexerTokenType.LeftParen);
+    const argumentNodes = [];
 
-  override parse(tokenStream: TokenStream): BaseNode[] {
-    const start = tokenStream.expect(TokenKind.KeywordExtern);
+    while (
+      !ctx.scanner.isAtEnd &&
+      !ctx.scanner.check(LexerTokenType.RightParen)
+    ) {
+      const typeAnnotationNode = Parsers.TypeAnnotation.parse(ctx);
+      if (typeAnnotationNode) argumentNodes.push(typeAnnotationNode);
 
-    const nameToken = tokenStream.expect(
-      TokenKind.Identifier,
-    ) as IdentifierToken;
-
-    tokenStream.expect(TokenKind.ParentheseOpen);
-    const parameterTypes = this.parseParameterTypes(tokenStream);
-    tokenStream.expect(TokenKind.ParentheseClose);
-
-    tokenStream.expect(TokenKind.Colon);
-
-    const returnTypeNode = Parsers.Type.parse(tokenStream)[0] as TypeBaseNode;
-
-    const end = returnTypeNode;
-    const semicolon = tokenStream.match(TokenKind.Semicolon);
-
-    return [
-      new ExternNode(
-        {
-          start: start?.span?.start ?? { line: 0, column: 0 },
-          end: (semicolon ?? end)?.span?.end ?? { line: 0, column: 0 },
-        },
-        nameToken?.value ?? "",
-        parameterTypes,
-        returnTypeNode,
-      ),
-    ];
-  }
-
-  private parseParameterTypes(tokenStream: TokenStream): TypeBaseNode[] {
-    const nextToken = tokenStream.peek();
-    if (nextToken === null) return [];
-    if (nextToken.kind === TokenKind.ParentheseClose) return [];
-
-    const parameterTypes: TypeBaseNode[] = [];
-
-    while (!tokenStream.isAtEnd()) {
-      const currentToken = tokenStream.peek();
-      if (currentToken === null) break;
-      if (currentToken.kind === TokenKind.ParentheseClose) break;
-
-      const typeNode = Parsers.Type.parse(tokenStream)[0] as TypeBaseNode;
-      parameterTypes.push(typeNode);
-
-      const comma = tokenStream.match(TokenKind.Comma);
-      if (comma === null) break;
+      if (!ctx.scanner.match(LexerTokenType.Comma)) break;
     }
 
-    return parameterTypes;
+    ctx.scanner.expect(LexerTokenType.RightParen);
+
+    ctx.scanner.expect(LexerTokenType.Colon);
+    const typeAnnotationNode = Parsers.TypeAnnotation.parse(ctx);
+
+    return TreeNodes.createExternNode(
+      TreeNodes.tokenToIdentifierNode(nameNode),
+      argumentNodes,
+      typeAnnotationNode,
+      TreeNodes.mergeSpans(
+        externToken?.span ?? null,
+        nameNode?.span ?? null,
+        ...argumentNodes.map((a) => a?.span ?? null),
+        typeAnnotationNode?.span ?? null,
+      ),
+    );
   }
 }

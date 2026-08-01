@@ -1,91 +1,91 @@
-import { TokenKind } from "@kina-lang/lexer";
-import type { BaseNode } from "../nodes/_base";
-import type { TokenStream } from "../TokenStream";
-import { BaseParser } from "./_base";
-import { BasicBlockNode } from "../nodes/BasicBlock";
-import { KinaAST } from "../KinaAST";
-import { Diagnostics } from "@kina-lang/utils";
+import { LexerTokenType } from "@kina-lang/lexer";
+import type { BasicBlockTreeNode, TreeNode } from "../../types/tree";
+import type { TreeContext } from "../TreeContext";
+import { Parsers, type Parser } from "./Parser";
+import { TreeNodes } from "../TreeNodes";
+import { Diagnostics, DiagnosticsErrorCode } from "@kina-lang/utils";
 
-export class BasicBlockParser extends BaseParser {
-  constructor() {
-    super();
-  }
+export class BasicBlockParser implements Parser<BasicBlockTreeNode> {
+  parse(
+    ctx: TreeContext,
+    allowWithoutBraces: boolean = false,
+  ): BasicBlockTreeNode | null {
+    // If we allow without braces and there is not a brace, parse the next
+    // statement as a single node basic block
+    if (allowWithoutBraces && !ctx.scanner.check(LexerTokenType.LeftBrace)) {
+      const node = this.parseNext(ctx);
+      if (!node) return null;
 
-  override canParse(tokenStream: TokenStream): boolean {
-    const currentToken = tokenStream.peek();
-    if (currentToken === null) return false;
-    if (currentToken.kind !== TokenKind.BraceOpen) return false;
-
-    return true;
-  }
-
-  override parse(tokenStream: TokenStream): BasicBlockNode[] {
-    const start = tokenStream.expect(TokenKind.BraceOpen);
-
-    const nodes: BaseNode[] = [];
-
-    while (!tokenStream.isAtEnd()) {
-      const nextChar = tokenStream.peek();
-      if (nextChar === null) break;
-      if (nextChar.kind === TokenKind.BraceClose) break;
-
-      const result = this.parseNext(tokenStream);
-      if (result) nodes.push(...result);
+      return TreeNodes.createBasicBlock(
+        [node],
+        TreeNodes.mergeSpans(node?.span ?? null),
+      );
     }
 
-    const end = tokenStream.expect(TokenKind.BraceClose);
-    const semicolon = tokenStream.match(TokenKind.Semicolon);
+    const start = ctx.scanner.expect(LexerTokenType.LeftBrace);
 
-    return [
-      new BasicBlockNode(
-        {
-          start: start?.span?.start ?? { line: 0, column: 0 },
-          end: (semicolon ?? end)?.span?.end ?? { line: 0, column: 0 },
-        },
-        nodes,
+    const nodes: TreeNode[] = [];
+    while (!ctx.scanner.isAtEnd) {
+      const next = ctx.scanner.peek();
+      if (next && next.type === LexerTokenType.RightBrace) break;
+
+      const node = this.parseNext(ctx);
+      if (node) nodes.push(node);
+    }
+
+    const end = ctx.scanner.expect(LexerTokenType.RightBrace);
+
+    return TreeNodes.createBasicBlock(
+      nodes,
+      TreeNodes.mergeSpans(
+        start?.span ?? null,
+        ...nodes.map((n) => n?.span ?? null),
+        end?.span ?? null,
       ),
-    ];
-  }
-
-  public parseSingleStatement(tokenStream: TokenStream): BasicBlockNode[] {
-    const nodes: BaseNode[] = [];
-
-    while (!tokenStream.isAtEnd()) {
-      const nextChar = tokenStream.peek();
-      if (nextChar === null) break;
-      if (nextChar.kind === TokenKind.Semicolon) {
-        tokenStream.advance();
-        break;
-      }
-
-      const result = this.parseNext(tokenStream);
-      if (result) nodes.push(...result);
-      break; // Only parse a single statement
-    }
-
-    return [
-      new BasicBlockNode(
-        {
-          start: nodes[0]?.span?.start ??
-            tokenStream.peek()?.span?.start ?? { line: 0, column: 0 },
-          end: nodes[nodes.length - 1]?.span?.end ??
-            tokenStream.peek()?.span?.end ?? { line: 0, column: 0 },
-        },
-        nodes,
-      ),
-    ];
-  }
-
-  private parseNext(tokenStream: TokenStream): BaseNode[] | null {
-    if (tokenStream.isAtEnd()) return null;
-
-    for (const parser of KinaAST.PARSERS) {
-      if (parser.canParse(tokenStream)) return parser.parse(tokenStream);
-    }
-
-    const nextToken = tokenStream.peek();
-    Diagnostics.throwInternal(
-      `Failed to parse node: No parser could parse the next token (kind: ${nextToken?.kind}, value: ${nextToken?.reconstruct()})`,
     );
+  }
+
+  parseNext(ctx: TreeContext): TreeNode | null {
+    const token = ctx.scanner.peek();
+    if (!token) return null;
+
+    switch (token.type) {
+      case LexerTokenType.KeywordReturn:
+        return Parsers.ReturnStatement.parse(ctx);
+      case LexerTokenType.KeywordMutable:
+      case LexerTokenType.KeywordValue:
+        return Parsers.VariableDeclarationStatement.parse(ctx);
+      case LexerTokenType.KeywordIf:
+        return Parsers.IfStatement.parse(ctx);
+      case LexerTokenType.Semicolon:
+      case LexerTokenType.Comment:
+      case LexerTokenType.MultilineComment:
+        ctx.scanner.advance();
+        return null;
+      case LexerTokenType.EOF:
+      default:
+        // If nothing could parse the token, try to parse it as an expression statement
+        const expressionStatementNode = Parsers.ExpressionStatement.parse(ctx);
+        if (expressionStatementNode) return expressionStatementNode;
+
+        // If nothing could parse the token, throw a diagnostic error
+        // and consume the token to avoid an infinite loop
+        ctx.scanner.advance();
+
+        Diagnostics.error(
+          DiagnosticsErrorCode.SyntaxError,
+          `Unexpected token type '${token.type}' in basic block`,
+          {
+            file: ctx.compilerContext.relativeActiveFilePath ?? "<unknown>",
+            span: [
+              token.span.startPosition.line,
+              token.span.startPosition.column,
+              token.span.endPosition.line,
+              token.span.endPosition.column,
+            ],
+          },
+        );
+        return null;
+    }
   }
 }

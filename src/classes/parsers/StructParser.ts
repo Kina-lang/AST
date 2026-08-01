@@ -1,62 +1,42 @@
-import { IdentifierToken, TokenKind } from "@kina-lang/lexer";
-import type { TokenStream } from "../TokenStream";
-import { BaseParser } from "./_base";
-import type { BaseNode } from "../nodes/_base";
-import { StructNode } from "../nodes/Struct";
-import type { StructFieldNode } from "../nodes/StructField";
-import { Parsers } from "./_index";
+import { LexerTokenType } from "@kina-lang/lexer";
+import type { StructTreeNode } from "../../types/tree";
+import type { TreeContext } from "../TreeContext";
+import { Parsers, type Parser } from "./Parser";
+import { TreeNodes } from "../TreeNodes";
 
-export class StructParser extends BaseParser {
-  constructor() {
-    super();
-  }
+export class StructParser implements Parser<StructTreeNode> {
+  parse(ctx: TreeContext): StructTreeNode | null {
+    const structToken = ctx.scanner.expect(LexerTokenType.KeywordStruct);
+    if (!structToken) return null;
 
-  override canParse(tokenStream: TokenStream): boolean {
-    const currentToken = tokenStream.peek();
-    if (currentToken === null) return false;
-    if (currentToken.kind !== TokenKind.KeywordStruct) return false;
+    const modifiers = ctx.consumeModifiers();
 
-    return true;
-  }
+    const nameNode = ctx.scanner.expect(LexerTokenType.Identifier);
 
-  override parse(tokenStream: TokenStream): BaseNode[] {
-    const start = tokenStream.expect(TokenKind.KeywordStruct);
-    const identifierToken = tokenStream.expect(
-      TokenKind.Identifier,
-    ) as IdentifierToken;
+    ctx.scanner.expect(LexerTokenType.LeftBrace);
 
-    tokenStream.expect(TokenKind.BraceOpen);
+    const fieldNodes = [];
+    while (
+      !ctx.scanner.isAtEnd &&
+      !ctx.scanner.check(LexerTokenType.RightBrace)
+    ) {
+      const fieldNode = Parsers.StructField.parse(ctx);
+      if (fieldNode) fieldNodes.push(fieldNode);
 
-    const fields = this.parseFields(tokenStream);
-
-    const brace = tokenStream.expect(TokenKind.BraceClose);
-    const end = tokenStream.match(TokenKind.Semicolon);
-
-    return [
-      new StructNode(
-        {
-          start: start?.span?.start ?? { line: 0, column: 0 },
-          end: end?.span?.end ?? brace?.span?.end ?? { line: 0, column: 0 },
-        },
-        identifierToken?.value ?? "",
-        fields,
-      ),
-    ];
-  }
-
-  private parseFields(tokenStream: TokenStream): StructFieldNode[] {
-    const fields: StructFieldNode[] = [];
-
-    while (!tokenStream.isAtEnd()) {
-      if (!Parsers.StructField.canParse(tokenStream)) break;
-
-      const fieldNodes = Parsers.StructField.parse(tokenStream);
-      fields.push(...fieldNodes);
-
-      const comma = tokenStream.match(TokenKind.Comma);
-      if (comma === null) break;
+      if (!ctx.scanner.match(LexerTokenType.Comma)) break;
     }
 
-    return fields;
+    ctx.scanner.expect(LexerTokenType.RightBrace);
+
+    return TreeNodes.createStructNode(
+      TreeNodes.tokenToIdentifierNode(nameNode),
+      fieldNodes,
+      modifiers,
+      TreeNodes.mergeSpans(
+        structToken?.span ?? null,
+        nameNode?.span ?? null,
+        ...fieldNodes.map((f) => f.span ?? null),
+      ),
+    );
   }
 }
