@@ -27,7 +27,7 @@ export class UnaryExpressionParser implements InfixExpressionNodeParser<UnaryExp
     return TreeNodes.createUnaryExpressionNode(
       operatorToken.type,
       rightExpression,
-      TreeNodes.mergeSpans(rightExpression?.span ?? null),
+      TreeNodes.mergeSpans(operatorToken.span, rightExpression?.span ?? null),
     );
   }
 }

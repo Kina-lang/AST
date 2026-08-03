@@ -42,6 +42,7 @@ export class ImportParser implements Parser<ImportTreeNode> {
       sourceNode,
       TreeNodes.mergeSpans(
         importKeyword?.span ?? null,
+        ...memberNodes.map((m) => m.span ?? null),
         sourceNode?.span ?? null,
       ),
     );

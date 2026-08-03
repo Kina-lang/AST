@@ -32,6 +32,7 @@ export class CallExpressionParser implements InfixExpressionNodeParser<CallExpre
       left,
       argumentNodes,
       TreeNodes.mergeSpans(
+        left?.span ?? null,
         openParenToken?.span ?? null,
         closeParenToken?.span ?? null,
       ),
